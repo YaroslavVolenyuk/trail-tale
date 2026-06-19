@@ -19,6 +19,7 @@
   "attemptsBeforeHint": "Versuche vor Tipp",
   "media": "Medien",
   "dropMedia": "Bild hier ablegen oder klicken",
+  "uploading": "Wird hochgeladen…",
   "live": "Live",
   "lastUpdated": "Aktualisiert vor {{seconds}}s",
   "refresh": "Aktualisieren",

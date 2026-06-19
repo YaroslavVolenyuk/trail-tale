@@ -90,25 +90,32 @@ export function useCheckClueCode() {
     mutationFn: async ({
       sessionId,
       code,
+      deviceId,
     }: {
       sessionId: string;
       code: string;
+      deviceId?: string;
     }): Promise<CheckResult> => {
       const { data, error } = await supabase.rpc('check_clue_code', {
         p_session_id: sessionId,
-        p_code: code,
+        p_code:       code,
+        p_device_id:  deviceId ?? null,
       });
       if (error) throw error;
       return data as CheckResult;
     },
     onSuccess: (_result, { sessionId }) => {
-      // Invalidate session so PlayScreen gets fresh current_clue
       void queryClient.invalidateQueries({ queryKey: ['session', sessionId] });
     },
   });
 }
 
 // ── useStartSession ───────────────────────────────────────────────────────────
+
+export interface StartSessionResult {
+  session_id:    string;
+  recovery_code: string | null;  // null when resuming an existing session
+}
 
 export function useStartSession() {
   return useMutation({
@@ -118,22 +125,58 @@ export function useStartSession() {
       deviceId,
       lang,
       teamId,
+      isTest,
     }: {
       questSlug: string;
       nickname: string;
       deviceId: string;
       lang: string;
       teamId?: string;
-    }): Promise<string> => {
-      const { data, error } = await supabase.rpc('start_session', {
+      isTest?: boolean;
+    }): Promise<StartSessionResult> => {
+      const params: Record<string, unknown> = {
         p_quest_slug: questSlug,
         p_nickname:   nickname,
         p_device_id:  deviceId,
         p_lang:       lang,
         p_team_id:    teamId ?? null,
+      };
+      // p_is_test added by migration 20240103 — only pass when true to stay
+      // backward-compatible with deployments that haven't run it yet
+      if (isTest) params['p_is_test'] = true;
+
+      const { data, error } = await supabase.rpc('start_session', params);
+      if (error) throw new Error((error as { message?: string }).message ?? String(error));
+
+      // Handle old DB (returns uuid string) and new DB (returns jsonb object)
+      if (typeof data === 'string') {
+        return { session_id: data, recovery_code: null };
+      }
+      return data as StartSessionResult;
+    },
+  });
+}
+
+// ── useResumeByRecoveryCode ───────────────────────────────────────────────────
+
+export function useResumeByRecoveryCode() {
+  return useMutation({
+    mutationFn: async ({
+      code,
+      deviceId,
+    }: {
+      code:     string;
+      deviceId: string;
+    }): Promise<{ session_id: string }> => {
+      const { data, error } = await supabase.rpc('resume_by_recovery_code', {
+        p_code:      code.toUpperCase().trim(),
+        p_device_id: deviceId,
       });
       if (error) throw error;
-      return data as string;
+      const result = data as { session_id?: string; error?: string };
+      if (result.error) throw new Error(result.error);
+      if (!result.session_id) throw new Error('no session returned');
+      return { session_id: result.session_id };
     },
   });
 }

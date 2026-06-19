@@ -7,6 +7,9 @@ import { TextInput } from '@/shared/ui';
 import { useSession, useCheckClueCode } from '@/shared/lib/queries';
 import type { Lang } from '@/shared/lib/mockData';
 import type { SessionClue } from '@/shared/lib/queries';
+import { QRScanner } from './QRScanner';
+import { supabase } from '@/shared/lib/supabase';
+import { getDeviceId } from '@/shared/lib/deviceId';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 type SubmitState = 'idle' | 'submitting' | 'wrong' | 'rateLimited' | 'correct';
@@ -203,6 +206,7 @@ export default function PlayScreen() {
   const [submitState, setSubmitState] = useState<SubmitState>('idle');
   const [hintVisible, setHintVisible] = useState(false);
   const [countdown, setCountdown] = useState(0);
+  const [qrOpen, setQrOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -225,6 +229,25 @@ export default function PlayScreen() {
   useEffect(() => {
     return () => { if (countdownRef.current !== null) clearInterval(countdownRef.current); };
   }, []);
+
+  // Realtime: subscribe to session row changes so team members see progress live
+  useEffect(() => {
+    if (!sessionId) return;
+    const channel = supabase
+      .channel(`session:${sessionId}`)
+      .on(
+        'postgres_changes',
+        {
+          event:  'UPDATE',
+          schema: 'public',
+          table:  'sessions',
+          filter: `id=eq.${sessionId}`,
+        },
+        () => { void refetch(); },
+      )
+      .subscribe();
+    return () => { void supabase.removeChannel(channel); };
+  }, [sessionId, refetch]);
 
   const startCountdown = useCallback((seconds: number) => {
     if (countdownRef.current !== null) clearInterval(countdownRef.current);
@@ -253,7 +276,7 @@ export default function PlayScreen() {
     if (!sessionId || !code.trim() || submitState === 'submitting') return;
     setSubmitState('submitting');
 
-    const result = await checkCode.mutateAsync({ sessionId, code: code.trim() }).catch(() => null);
+    const result = await checkCode.mutateAsync({ sessionId, code: code.trim(), deviceId: getDeviceId() }).catch(() => null);
     if (!result) {
       setSubmitState('idle');
       return;
@@ -347,6 +370,27 @@ export default function PlayScreen() {
 
         <BottomDock>
           <div className="flex gap-2 items-center">
+            {/* QR scan button */}
+            <button
+              onClick={() => setQrOpen(true)}
+              disabled={isRateLimited}
+              className={[
+                'h-ctrl w-ctrl flex-shrink-0 rounded-full bg-surface-raised text-white',
+                'flex items-center justify-center transition-colors',
+                'hover:bg-surface hover:text-accent',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
+                'disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer',
+              ].join(' ')}
+              aria-label={t('scanQR')}
+            >
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                <rect x="1.75" y="1.75" width="5.5" height="5.5" rx="1" stroke="currentColor" strokeWidth="1.4" />
+                <rect x="10.75" y="1.75" width="5.5" height="5.5" rx="1" stroke="currentColor" strokeWidth="1.4" />
+                <rect x="1.75" y="10.75" width="5.5" height="5.5" rx="1" stroke="currentColor" strokeWidth="1.4" />
+                <path d="M10.75 10.75h2v2h-2zM14.25 10.75h2v2h-2zM10.75 14.25h2v2h-2zM14.25 14.25h2v2h-2z" fill="currentColor" />
+              </svg>
+            </button>
+
             <TextInput
               ref={inputRef}
               value={code}
@@ -369,10 +413,11 @@ export default function PlayScreen() {
               onClick={() => void handleSubmit()}
               disabled={!code.trim() || submitState === 'submitting' || isRateLimited}
               className={[
-                'h-ctrl flex-shrink-0 rounded-full bg-accent text-bg text-[15px] font-semibold',
-                'transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
+                'h-ctrl flex-shrink-0 rounded-full bg-accent text-bg font-semibold',
+                'flex items-center justify-center transition-opacity',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
                 'disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer',
-                isWrong ? 'px-4' : 'px-5',
+                isWrong ? 'px-4 text-[14px]' : 'w-ctrl text-[18px]',
               ].join(' ')}
             >
               {isWrong ? t('tryAgain') : '→'}
@@ -389,13 +434,31 @@ export default function PlayScreen() {
               </p>
             )}
             {!isWrong && !isRateLimited && (
-              <p className={`text-[12px] text-center mt-2 ${attemptsLeft <= 1 ? 'text-danger' : 'text-text-muted'}`}>
-                {t('attemptsRemaining', { count: attemptsLeft })}
-              </p>
+              hint_available ? (
+                <p className="text-[12px] text-center mt-2 text-text-hint">
+                  {t('hintUnlockedKeepTrying')}
+                </p>
+              ) : attemptsLeft > 0 ? (
+                <p className={`text-[12px] text-center mt-2 ${attemptsLeft <= 1 ? 'text-danger' : 'text-text-muted'}`}>
+                  {t('attemptsRemaining', { count: attemptsLeft })}
+                </p>
+              ) : null
             )}
           </div>
         </BottomDock>
       </Screen>
+
+      <QRScanner
+        open={qrOpen}
+        onScan={(scannedCode) => {
+          setCode(scannedCode);
+          setQrOpen(false);
+          if (submitState === 'wrong') setSubmitState('idle');
+          // auto-submit after a short delay so user sees the filled code
+          setTimeout(() => { void handleSubmit(); }, 150);
+        }}
+        onClose={() => setQrOpen(false)}
+      />
 
       <AnimatePresence>
         {submitState === 'correct' && (

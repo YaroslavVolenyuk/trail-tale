@@ -44,5 +44,22 @@
   "chooseQuest": "Quest wählen",
   "chooseQuestSub": "Wähle ein Stadtabenteuer",
   "noQuests": "Noch keine Quests verfügbar",
-  "loadError": "Quests konnten nicht geladen werden. Verbindung prüfen."
+  "loadError": "Quests konnten nicht geladen werden. Verbindung prüfen.",
+  "gdpr": {
+    "title": "Bevor du beginnst",
+    "body": "TrailTale speichert deinen Nicknamen und eine Geräte-ID, um deinen Fortschritt zu verfolgen und die Bestenliste anzuzeigen. Daten werden nach 7 Tagen automatisch gelöscht. Du kannst jederzeit die Löschung beantragen.",
+    "checkboxLabel": "Ich stimme der vorübergehenden Speicherung meines Nicknamens und meiner Geräte-ID zur Durchführung des Quests zu.",
+    "agree": "Zustimmen — Los geht's!"
+  },
+  "recovery": {
+    "title": "Wiederherstellungscode sichern",
+    "body": "Wenn du das Gerät wechselst oder den Browser leerst, kannst du mit diesem Code weiterspielen. Er wird nur einmal angezeigt.",
+    "copy": "Code kopieren",
+    "gotIt": "Verstanden — los geht's!",
+    "resumeTitle": "Quest fortsetzen",
+    "resumeBody": "Gib den 6-stelligen Code ein, den du beim Start erhalten hast.",
+    "resumeBtn": "Fortsetzen",
+    "resumeLink": "Mit Code fortsetzen",
+    "notFound": "Code nicht gefunden oder Quest bereits abgeschlossen."
+  }
 }

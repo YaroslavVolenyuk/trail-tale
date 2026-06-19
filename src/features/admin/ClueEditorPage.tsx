@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { supabase } from '@/shared/lib/supabase';
 import { z } from 'zod';
+import QRCode from 'qrcode';
 import { useAdminQuest, useSaveClue, useUpdateQuest } from '@/shared/lib/queries';
 
 // ── Schema ────────────────────────────────────────────────────────────────────
@@ -55,6 +57,155 @@ function IconImage() {
   );
 }
 
+function IconTrash() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+      <path d="M2 3.5h10M5 3.5V2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v1M5.5 6v4M8.5 6v4M3 3.5l.5 8a.5.5 0 0 0 .5.5h6a.5.5 0 0 0 .5-.5l.5-8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+const BUCKET = 'clue-media';
+
+/** Convert a File to WebP via canvas (max 1280px), return a Blob */
+async function toWebp(file: File, maxPx = 1280): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return reject(new Error('Canvas context unavailable'));
+      ctx.drawImage(img, 0, 0, w, h);
+      canvas.toBlob(
+        (blob) => { blob ? resolve(blob) : reject(new Error('Canvas toBlob failed')); },
+        'image/webp',
+        0.85,
+      );
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Image load failed')); };
+    img.src = url;
+  });
+}
+
+interface MediaUploadProps {
+  questId: string;
+  clueId: string | undefined; // undefined = new clue not yet saved
+  currentUrl: string | null;
+  onUploaded: (path: string) => void;
+  onRemoved: () => void;
+}
+
+function MediaUpload({ questId, clueId, currentUrl, onUploaded, onRemoved }: MediaUploadProps) {
+  const { t } = useTranslation('admin');
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+
+  const getPublicUrl = (path: string) =>
+    supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+
+  const processFile = useCallback(async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      setUploadError('Only image files are accepted');
+      return;
+    }
+    setUploading(true);
+    setUploadError(null);
+    try {
+      const webp = await toWebp(file);
+      // Use clueId if available, else a temp uuid so the path is stable
+      const suffix = clueId ?? crypto.randomUUID();
+      const path = `${questId}/${suffix}.webp`;
+      const { error } = await supabase.storage
+        .from(BUCKET)
+        .upload(path, webp, { upsert: true, contentType: 'image/webp' });
+      if (error) throw error;
+      onUploaded(path);
+    } catch (e) {
+      setUploadError(e instanceof Error ? e.message : 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  }, [questId, clueId, onUploaded]);
+
+  const handleFiles = (files: FileList | null) => {
+    if (files?.[0]) void processFile(files[0]);
+  };
+
+  if (currentUrl) {
+    return (
+      <div className="relative rounded-xl overflow-hidden border border-adm-border">
+        <img
+          src={getPublicUrl(currentUrl)}
+          alt="Clue media"
+          className="w-full h-[160px] object-cover"
+        />
+        <button
+          type="button"
+          onClick={onRemoved}
+          className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/90 flex items-center justify-center text-adm-text hover:bg-white transition-colors shadow"
+          aria-label="Remove image"
+        >
+          <IconTrash />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click(); }}
+        onClick={() => fileInputRef.current?.click()}
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragOver(false);
+          handleFiles(e.dataTransfer.files);
+        }}
+        className={[
+          'border-2 border-dashed rounded-xl p-6 flex flex-col items-center gap-2 transition-colors cursor-pointer',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
+          dragOver ? 'border-accent text-accent bg-accent/5' : 'border-adm-border text-adm-muted hover:border-accent hover:text-accent',
+          uploading ? 'pointer-events-none opacity-60' : '',
+        ].join(' ')}
+        aria-label={t('dropMedia')}
+      >
+        {uploading ? (
+          <div className="w-6 h-6 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+        ) : (
+          <IconImage />
+        )}
+        <p className="text-[12px] text-center">
+          {uploading ? t('uploading') : t('dropMedia')}
+        </p>
+      </div>
+      {uploadError && (
+        <p className="text-[12px] text-danger mt-1">{uploadError}</p>
+      )}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="sr-only"
+        onChange={(e) => handleFiles(e.target.files)}
+        aria-hidden="true"
+      />
+    </div>
+  );
+}
+
 // ── Field components ──────────────────────────────────────────────────────────
 
 function FormField({
@@ -83,6 +234,60 @@ const inputCls =
 const textareaCls =
   'w-full px-3.5 py-2.5 rounded-lg border border-adm-border bg-adm-bg text-adm-text text-[14px] outline-none focus:border-accent transition-colors placeholder:text-adm-placeholder resize-none';
 
+// ── Print QR ──────────────────────────────────────────────────────────────────
+
+async function openPrintQR({
+  code,
+  clueNumber,
+  locationName,
+  questTitle,
+}: {
+  code: string;
+  clueNumber: number;
+  locationName: string;
+  questTitle: string;
+}) {
+  if (!code.trim()) return;
+  const dataUrl = await QRCode.toDataURL(code, { width: 400, margin: 2, color: { dark: '#000000', light: '#ffffff' } });
+
+  const win = window.open('', '_blank', 'width=600,height=700');
+  if (!win) return;
+
+  win.document.write(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>QR — Clue ${clueNumber}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #fff; color: #000; }
+    .page { width: 90mm; margin: 0 auto; padding: 10mm; text-align: center; }
+    .quest { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
+    .clue-num { font-size: 28px; font-weight: 700; margin-bottom: 2px; }
+    .location { font-size: 13px; color: #444; margin-bottom: 12px; min-height: 18px; }
+    img { width: 180px; height: 180px; display: block; margin: 0 auto 12px; }
+    .code { font-family: monospace; font-size: 20px; font-weight: 700; letter-spacing: .15em; margin-bottom: 8px; }
+    .hint { font-size: 11px; color: #888; }
+    .divider { border: none; border-top: 1px dashed #ccc; margin: 12px 0; }
+    @media print { body { -webkit-print-color-adjust: exact; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <p class="quest">${questTitle}</p>
+    <p class="clue-num">Clue ${clueNumber}</p>
+    <p class="location">${locationName || '&nbsp;'}</p>
+    <hr class="divider" />
+    <img src="${dataUrl}" alt="QR code for ${code}" />
+    <p class="code">${code}</p>
+    <p class="hint">Scan or enter code manually</p>
+  </div>
+  <script>window.onload = () => { window.print(); }<\/script>
+</body>
+</html>`);
+  win.document.close();
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function ClueEditorPage() {
@@ -100,6 +305,15 @@ export default function ClueEditorPage() {
   const [activeLang, setActiveLang] = useState<Lang>('en');
   const [codeVisible, setCodeVisible] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [mediaUrl, setMediaUrl] = useState<string | null>(null);
+
+  // Sync mediaUrl from loaded clue (only once on first load)
+  const mediaInitialised = useRef(false);
+  if (clue && !mediaInitialised.current) {
+    mediaInitialised.current = true;
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    Promise.resolve().then(() => setMediaUrl(clue.media_url ?? null));
+  }
 
   const langLabels: Record<Lang, string> = { ua: '🇺🇦 UA', en: '🇬🇧 EN', de: '🇦🇹 DE' };
 
@@ -166,6 +380,7 @@ export default function ClueEditorPage() {
         location_name: formData.locationName || null,
         lat: formData.lat,
         lng: formData.lng,
+        media_url: mediaUrl,
       });
 
       // attemptsBeforeHint lives at the quest level — save it if changed
@@ -335,6 +550,34 @@ export default function ClueEditorPage() {
               </button>
             </div>
           </FormField>
+
+          {/* Print QR */}
+          <div className="flex items-center gap-3 pt-1">
+            <button
+              type="button"
+              onClick={() => {
+                const code = watch('code');
+                const locationName = watch('locationName');
+                void openPrintQR({
+                  code,
+                  clueNumber: (clue?.order ?? 0) + 1,
+                  locationName,
+                  questTitle,
+                });
+              }}
+              disabled={!watch('code').trim()}
+              className="flex items-center gap-2 h-[36px] px-4 rounded-btn border border-adm-border text-adm-text text-[13px] font-medium hover:border-accent hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <rect x="1" y="4" width="12" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+                <path d="M3.5 4V2.5A.5.5 0 0 1 4 2h6a.5.5 0 0 1 .5.5V4" stroke="currentColor" strokeWidth="1.3" />
+                <rect x="3.5" y="7" width="7" height="4" rx=".5" fill="currentColor" opacity=".25" />
+                <rect x="3.5" y="7" width="7" height="4" rx=".5" stroke="currentColor" strokeWidth="1.3" />
+              </svg>
+              Print QR
+            </button>
+            <p className="text-[11px] text-adm-muted">Opens print-ready page with QR code</p>
+          </div>
         </div>
 
         {/* Right column — meta (40%) */}
@@ -408,10 +651,13 @@ export default function ClueEditorPage() {
             <p className="text-[12px] font-semibold text-adm-muted uppercase tracking-wider mb-3">
               {t('media')}
             </p>
-            <div className="border-2 border-dashed border-adm-border rounded-xl p-6 flex flex-col items-center gap-2 text-adm-muted hover:border-accent hover:text-accent transition-colors cursor-pointer">
-              <IconImage />
-              <p className="text-[12px] text-center">{t('dropMedia')}</p>
-            </div>
+            <MediaUpload
+              questId={quest.id}
+              clueId={clue?.id}
+              currentUrl={mediaUrl}
+              onUploaded={(path) => setMediaUrl(path)}
+              onRemoved={() => setMediaUrl(null)}
+            />
           </div>
         </div>
       </div>

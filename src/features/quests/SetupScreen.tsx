@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import i18n from '@/shared/i18n';
 import { Screen, TopBar, Pill, Button, BottomDock, SectionLabel } from '@/shared/ui';
+import { GdprModal, hasConsent } from '@/shared/ui/GdprModal';
 import type { Lang } from '@/shared/lib/mockData';
 
 type Mode = 'solo' | 'team';
@@ -60,6 +61,8 @@ export default function SetupScreen() {
 
   const [lang, setLang] = useState<Lang>(parseLang(localStorage.getItem('tt:lang')));
   const [mode, setMode] = useState<Mode>('solo');
+  const [gdprOpen, setGdprOpen] = useState(false);
+  const [pendingNav, setPendingNav] = useState<string | null>(null);
 
   const handleLangChange = (l: Lang) => {
     setLang(l);
@@ -67,12 +70,18 @@ export default function SetupScreen() {
     localStorage.setItem('tt:lang', l);
   };
 
+  const getDestination = () => {
+    if (!slug) return '/';
+    return mode === 'solo' ? `/q/${slug}/nickname` : `/q/${slug}/team`;
+  };
+
   const handleContinue = () => {
-    if (!slug) return;
-    if (mode === 'solo') {
-      navigate(`/q/${slug}/nickname`);
+    const dest = getDestination();
+    if (hasConsent()) {
+      navigate(dest);
     } else {
-      navigate(`/q/${slug}/team`);
+      setPendingNav(dest);
+      setGdprOpen(true);
     }
   };
 
@@ -119,6 +128,15 @@ export default function SetupScreen() {
       <BottomDock>
         <Button onClick={handleContinue}>{t('continue')}</Button>
       </BottomDock>
+
+      <GdprModal
+        open={gdprOpen}
+        onAgree={() => {
+          setGdprOpen(false);
+          if (pendingNav) navigate(pendingNav);
+        }}
+        onClose={() => setGdprOpen(false)}
+      />
     </Screen>
   );
 }

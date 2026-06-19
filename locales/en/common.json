@@ -44,5 +44,22 @@
   "chooseQuest": "Choose a Quest",
   "chooseQuestSub": "Pick a city adventure to begin",
   "noQuests": "No quests available yet",
-  "loadError": "Couldn't load quests. Check your connection."
+  "loadError": "Couldn't load quests. Check your connection.",
+  "gdpr": {
+    "title": "Before you start",
+    "body": "TrailTale stores your nickname and a device identifier to track your progress and display the leaderboard. Data is automatically deleted after 7 days. You can request deletion at any time.",
+    "checkboxLabel": "I agree to the temporary storage of my nickname and device ID for the purpose of playing the quest.",
+    "agree": "I Agree — Let's Play"
+  },
+  "recovery": {
+    "title": "Save your recovery code",
+    "body": "If you switch devices or clear your browser, enter this code to continue your progress. It can only be shown once.",
+    "copy": "Copy Code",
+    "gotIt": "Got it — let's play!",
+    "resumeTitle": "Resume your quest",
+    "resumeBody": "Enter the 6-character code you received when you started playing.",
+    "resumeBtn": "Resume",
+    "resumeLink": "Resume with code",
+    "notFound": "Code not found or quest already finished."
+  }
 }

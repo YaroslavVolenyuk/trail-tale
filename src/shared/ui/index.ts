@@ -7,3 +7,4 @@ export { Pill } from './Pill';
 export { ProgressBar } from './ProgressBar';
 export { BottomDock } from './BottomDock';
 export { SectionLabel } from './SectionLabel';
+export { InstallPrompt } from './InstallPrompt';

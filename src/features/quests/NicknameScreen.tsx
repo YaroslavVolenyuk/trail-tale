@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
@@ -13,6 +13,60 @@ interface FormValues {
   nickname: string;
 }
 
+// ── RecoveryCodeModal ─────────────────────────────────────────────────────────
+
+function RecoveryCodeModal({
+  code,
+  onDone,
+}: {
+  code: string;
+  onDone: () => void;
+}) {
+  const { t } = useTranslation('common');
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    void navigator.clipboard.writeText(code).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end">
+      <div className="absolute inset-0 bg-black/70" />
+      <div className="relative w-full bg-surface rounded-t-2xl px-6 pt-6 pb-[max(env(safe-area-inset-bottom),32px)]">
+        <div className="w-10 h-1 bg-border rounded-full mx-auto mb-6" />
+
+        <h2 className="text-[22px] font-bold text-white mb-1">
+          {t('recovery.title')}
+        </h2>
+        <p className="text-sm text-text-muted mb-6">
+          {t('recovery.body')}
+        </p>
+
+        {/* Code display */}
+        <div className="bg-surface-raised rounded-card py-5 flex items-center justify-center mb-4">
+          <span className="text-[32px] font-bold tracking-[0.25em] text-accent font-mono">
+            {code}
+          </span>
+        </div>
+
+        <button
+          onClick={handleCopy}
+          className="w-full h-[44px] rounded-btn border border-border text-text-muted text-sm mb-4 transition-colors active:text-white"
+        >
+          {copied ? t('copied') : t('recovery.copy')}
+        </button>
+
+        <Button onClick={onDone}>{t('recovery.gotIt')}</Button>
+      </div>
+    </div>
+  );
+}
+
+// ── NicknameScreen ────────────────────────────────────────────────────────────
+
 export default function NicknameScreen() {
   const { t } = useTranslation('common');
   const navigate = useNavigate();
@@ -22,16 +76,22 @@ export default function NicknameScreen() {
   const startSession = useStartSession();
   const joinTeam = useJoinTeam();
 
-  // If we arrived from TeamScreen with a joinCode, we're joining an existing team
+  const [pendingSession, setPendingSession] = useState<{
+    sessionId: string;
+    recoveryCode: string;
+  } | null>(null);
+
+  // State passed through navigation
   const state = (location.state ?? {}) as {
     teamId?: string;
     joinCode?: string;
     lang?: string;
     deviceId?: string;
+    isTest?: boolean;
   };
   const isJoiningTeam = !!state.joinCode;
 
-  // Autofocus only on desktop (pointer: fine = mouse)
+  // Autofocus on desktop (mouse pointer device)
   useEffect(() => {
     const mq = window.matchMedia('(pointer: fine)');
     if (mq.matches) inputRef.current?.focus();
@@ -59,7 +119,6 @@ export default function NicknameScreen() {
     const lang = i18n.language as string;
 
     if (isJoiningTeam && state.joinCode) {
-      // Join existing team by code — creates session + attaches to team
       const { session_id } = await joinTeam.mutateAsync({
         code: state.joinCode,
         nickname,
@@ -68,14 +127,23 @@ export default function NicknameScreen() {
       });
       navigate(`/play/${session_id}`);
     } else {
-      const sessionId = await startSession.mutateAsync({
+      const result = await startSession.mutateAsync({
         questSlug: slug,
         nickname,
         deviceId,
         lang,
         teamId: state.teamId,
+        isTest: state.isTest,
       });
-      navigate(`/play/${sessionId}`);
+      // Show recovery code modal only on fresh sessions (not resumes)
+      if (result.recovery_code) {
+        setPendingSession({
+          sessionId:    result.session_id,
+          recoveryCode: result.recovery_code,
+        });
+      } else {
+        navigate(`/play/${result.session_id}`);
+      }
     }
   };
 
@@ -83,56 +151,74 @@ export default function NicknameScreen() {
   const mutationError = startSession.error ?? joinTeam.error;
 
   return (
-    <Screen>
-      <TopBar title={t('yourName')} onBack={() => navigate(-1)} />
+    <>
+      <Screen>
+        <TopBar title={t('yourName')} onBack={() => navigate(-1)} />
 
-      <div className="flex-1 overflow-y-auto px-6 pt-8 pb-4">
-        <h2 className="text-[28px] font-bold text-white tracking-tight">
-          {t('whatsYourName')}
-        </h2>
-        <p className="text-[15px] text-text-muted mt-1.5">{t('shownOnLeaderboard')}</p>
+        <div className="flex-1 overflow-y-auto px-6 pt-8 pb-4">
+          <h2 className="text-[28px] font-bold text-white tracking-tight">
+            {t('whatsYourName')}
+          </h2>
+          <p className="text-[15px] text-text-muted mt-1.5">{t('shownOnLeaderboard')}</p>
 
-        <div className="mt-8">
-          <TextInput
-            {...restRegister}
-            ref={(el) => {
-              rhfRef(el);
-              (inputRef as React.MutableRefObject<HTMLInputElement | null>).current = el;
-            }}
-            placeholder={t('nicknamePlaceholder')}
-            maxLength={20}
-            autoCapitalize="words"
-            autoComplete="off"
-            enterKeyHint="done"
-            error={!!formState.errors['nickname']}
-            rightAdornment={
-              <span className="text-xs text-text-muted">
-                {value.length} / 20
-              </span>
-            }
-          />
-          {formState.errors['nickname'] && (
-            <p className="text-sm text-danger mt-2" role="alert">
-              {formState.errors['nickname'].message}
-            </p>
+          {state.isTest && (
+            <div className="mt-3 px-3 py-1.5 bg-amber-500/15 rounded-lg inline-flex items-center gap-2">
+              <span className="text-xs font-bold text-accent tracking-widest uppercase">TEST</span>
+              <span className="text-xs text-text-muted">session won't appear in leaderboard</span>
+            </div>
           )}
-          {mutationError && (
-            <p className="text-sm text-danger mt-2" role="alert">
-              {String(mutationError)}
-            </p>
-          )}
+
+          <div className="mt-8">
+            <TextInput
+              {...restRegister}
+              ref={(el) => {
+                rhfRef(el);
+                (inputRef as React.MutableRefObject<HTMLInputElement | null>).current = el;
+              }}
+              placeholder={t('nicknamePlaceholder')}
+              maxLength={20}
+              autoCapitalize="words"
+              autoComplete="off"
+              enterKeyHint="done"
+              error={!!formState.errors['nickname']}
+              rightAdornment={
+                <span className="text-xs text-text-muted">
+                  {value.length} / 20
+                </span>
+              }
+            />
+            {formState.errors['nickname'] && (
+              <p className="text-sm text-danger mt-2" role="alert">
+                {formState.errors['nickname'].message}
+              </p>
+            )}
+            {mutationError && (
+              <p className="text-sm text-danger mt-2" role="alert">
+                {(mutationError as Error).message ?? String(mutationError)}
+              </p>
+            )}
+          </div>
         </div>
-      </div>
 
-      <BottomDock>
-        <Button
-          onClick={handleSubmit(onSubmit)}
-          disabled={!formState.isValid || isPending}
-          className={(!formState.isValid || isPending) ? 'opacity-40' : ''}
-        >
-          {isPending ? '…' : t('continue')}
-        </Button>
-      </BottomDock>
-    </Screen>
+        <BottomDock>
+          <Button
+            onClick={handleSubmit(onSubmit)}
+            disabled={!formState.isValid || isPending}
+            className={(!formState.isValid || isPending) ? 'opacity-40' : ''}
+          >
+            {isPending ? '…' : t('continue')}
+          </Button>
+        </BottomDock>
+      </Screen>
+
+      {pendingSession && (
+        <RecoveryCodeModal
+          code={pendingSession.recoveryCode}
+          onDone={() => {
+            navigate(`/play/${pendingSession.sessionId}`);
+          }}
+        />
+      )}
+    </>
   );
 }

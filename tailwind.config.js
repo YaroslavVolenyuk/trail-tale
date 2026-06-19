@@ -46,6 +46,9 @@ export default {
         input: '52px',
         ctrl: '48px',
       },
+      width: {
+        ctrl: '48px',
+      },
       keyframes: {
         livepulse: {
           '0%,100%': { opacity: '1' },

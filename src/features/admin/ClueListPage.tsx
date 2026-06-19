@@ -255,7 +255,21 @@ export default function ClueListPage() {
         {/* Clue list header */}
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-[16px] font-semibold text-adm-text">{t('clues')} ({clues.length})</h2>
-          <button onClick={() => setShowAddModal(true)} className="text-[13px] text-accent font-medium hover:underline">+ {t('addClue')}</button>
+          <div className="flex items-center gap-3">
+            {data.quest.is_published && (
+              <button
+                onClick={() => navigate(`/q/${slug}/setup`, { state: { isTest: true } })}
+                className="text-[13px] font-medium text-adm-muted hover:text-adm-text border border-adm-border rounded-lg px-3 py-1.5 hover:bg-adm-border/40 transition-colors flex items-center gap-1.5"
+              >
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+                  <path d="M2 2.5h9M2 6.5h6M2 10.5h3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                  <path d="M9 7.5l2 2-2 2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Test Play
+              </button>
+            )}
+            <button onClick={() => setShowAddModal(true)} className="text-[13px] text-accent font-medium hover:underline">+ {t('addClue')}</button>
+          </div>
         </div>
 
         {/* DnD list */}

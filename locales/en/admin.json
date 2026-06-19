@@ -19,6 +19,7 @@
   "attemptsBeforeHint": "Attempts before hint",
   "media": "Media",
   "dropMedia": "Drop image here, or click to upload",
+  "uploading": "Uploading…",
   "live": "Live",
   "lastUpdated": "Last updated {{seconds}}s ago",
   "refresh": "Refresh",

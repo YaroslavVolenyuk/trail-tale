@@ -19,6 +19,7 @@
   "attemptsBeforeHint": "Спроб до підказки",
   "media": "Медіа",
   "dropMedia": "Перетягніть зображення або клацніть",
+  "uploading": "Завантаження…",
   "live": "Live",
   "lastUpdated": "Оновлено {{seconds}}с тому",
   "refresh": "Оновити",
