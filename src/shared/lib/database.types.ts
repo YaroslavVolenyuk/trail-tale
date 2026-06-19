@@ -110,6 +110,22 @@ export interface Database {
           is_test?: boolean;
         };
         Update: Partial<Database['public']['Tables']['sessions']['Insert']>;
+        Relationships: [
+          {
+            foreignKeyName: 'sessions_quest_id_fkey';
+            columns: ['quest_id'];
+            isOneToOne: false;
+            referencedRelation: 'quests';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'sessions_team_id_fkey';
+            columns: ['team_id'];
+            isOneToOne: false;
+            referencedRelation: 'teams';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       attempt_log: {
         Row: {
@@ -134,6 +150,25 @@ export interface Database {
         Row: { user_id: string };
         Insert: { user_id: string };
         Update: { user_id?: string };
+      };
+      admin_prompts: {
+        Row: {
+          id: string;
+          label: string;
+          description: string;
+          template: string;
+          sort_order: number;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          label: string;
+          description: string;
+          template: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['admin_prompts']['Insert']>;
       };
     };
     Views: {

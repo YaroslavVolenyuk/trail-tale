@@ -2,7 +2,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Screen, Button, BottomDock } from '@/shared/ui';
 import { useSession, useLeaderboard, formatDuration } from '@/shared/lib/queries';
-import type { Lang } from '@/shared/lib/mockData';
 
 function Trophy() {
   return (
@@ -25,8 +24,6 @@ export default function CompleteScreen() {
   const { t } = useTranslation('common');
   const navigate = useNavigate();
   const { sessionId } = useParams<{ sessionId: string }>();
-
-  const lang = (localStorage.getItem('tt:lang') as Lang | null) ?? 'en';
 
   const { data: sessionData } = useSession(sessionId ?? '');
   const questId = sessionData?.quest_id ?? '';

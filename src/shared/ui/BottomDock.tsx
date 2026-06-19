@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
 interface BottomDockProps {
-  children: ReactNode;
+  children?: ReactNode;
   border?: boolean;
   className?: string;
 }

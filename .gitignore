@@ -34,3 +34,4 @@ dist-ssr
 # Temp files
 _tmp_*
 trail-tale-app/
+.vercel
