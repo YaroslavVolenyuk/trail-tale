@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style data-omelette-print-defaults>
+@media print {
+  @page { margin: 0.5in; }
+  h1, h2, h3, h4, h5, h6 { break-after: avoid; }
+  figure, table, pre, blockquote, img, svg, li, tr { break-inside: avoid; }
+  section, article, [class*="card" i] { break-inside: avoid; }
+  img, svg { max-width: 100%; }
+  p { orphans: 3; widows: 3; }
+}
+</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; }
+    input::placeholder { color: #8E8E93 !important; opacity: 1; }
+    input:focus { outline: none; }
+    ::-webkit-scrollbar { display: none; }
+    * { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</helmet>
+
+<div style="min-height:100vh; background:#1A1A1A; display:flex; align-items:center; justify-content:center; padding:48px 24px; font-family:'Inter',sans-serif;">
+  <x-import component="IOSDevice" from="./ios-frame.jsx" dark="{{ darkMode }}" hint-size="402px,874px">
+
+    <div style="height:100%; display:flex; flex-direction:column; background:#0A0A0A; font-family:'Inter',sans-serif; overflow:hidden;">
+
+      <!-- Status bar offset -->
+      <div style="height:59px; flex-shrink:0;"></div>
+
+      <!-- Custom top bar -->
+      <div style="flex-shrink:0; display:flex; align-items:center; justify-content:space-between; padding:12px 20px 10px;">
+        <span style="color:#fff; font-size:15px; font-weight:600; letter-spacing:-0.2px;">Faust Quest</span>
+        <span style="color:#F5A623; font-size:15px; font-weight:600; letter-spacing:-0.2px;">3 / 6</span>
+      </div>
+
+      <!-- Progress bar -->
+      <div style="flex-shrink:0; height:3px; background:#2C2C2E;">
+        <div style="width:50%; height:3px; background:#F5A623;"></div>
+      </div>
+
+      <!-- Scrollable content -->
+      <div style="flex:1; overflow-y:auto; padding:16px; -webkit-overflow-scrolling:touch;">
+
+        <!-- Clue card -->
+        <div style="background:#1C1C1E; border-radius:16px; padding:20px;">
+
+          <div style="font-size:11px; font-weight:600; color:#F5A623; letter-spacing:0.12em; text-transform:uppercase; margin-bottom:12px;">Clue 3</div>
+
+          <h2 style="font-size:22px; font-weight:700; color:#fff; margin:0 0 14px; line-height:1.3; letter-spacing:-0.3px;">The Philosopher's<br>Forgotten Den</h2>
+
+          <p style="font-size:15px; color:#C7C7CC; line-height:1.6; margin:0; letter-spacing:-0.1px;">Where scholars once gathered to debate the nature of truth and alchemy, a great thinker left behind more than words. Beneath the sign of the golden serpent, where the river bends and lanterns glow amber at dusk, his spirit lingers still.</p>
+          <p style="font-size:15px; color:#C7C7CC; line-height:1.6; margin:12px 0 0; letter-spacing:-0.1px;">Seek the place where ink met stone, where the city's memory is carved into cobblestones. Stand before his monument and look east — the next answer is written in plain sight, hidden only by the weight of centuries.</p>
+
+          <!-- Divider -->
+          <div style="height:1px; background:#2C2C2E; margin:16px 0;"></div>
+
+          <!-- Hint toggle row -->
+          <div onClick="{{ toggleHint }}" style="display:flex; align-items:center; gap:8px; cursor:pointer; -webkit-tap-highlight-color:transparent; user-select:none;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 14c.2-1 .7-1.7 1.5-2.5A6 6 0 1 0 6 8c0 1.4.6 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"></path>
+              <path d="M9 18h6"></path>
+              <path d="M10 22h4"></path>
+            </svg>
+            <span style="font-size:14px; font-weight:500; color:#8E8E93; flex:1;">Need a hint?</span>
+            <sc-if value="{{ hintClosed }}" hint-placeholder-val="{{ true }}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </sc-if>
+            <sc-if value="{{ hintOpen }}" hint-placeholder-val="{{ false }}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+            </sc-if>
+          </div>
+
+          <!-- Hint expanded content -->
+          <sc-if value="{{ hintOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:12px; background:#2A2200; border-radius:12px; padding:16px;">
+              <div style="display:flex; align-items:center; gap:6px; margin-bottom:8px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5A623" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M15 14c.2-1 .7-1.7 1.5-2.5A6 6 0 1 0 6 8c0 1.4.6 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"></path>
+                  <path d="M9 18h6"></path>
+                  <path d="M10 22h4"></path>
+                </svg>
+                <span style="font-size:13px; font-weight:600; color:#F5A623; letter-spacing:0.02em;">Hint</span>
+              </div>
+              <p style="font-size:14px; color:#E8D5A3; font-style:italic; margin:0; line-height:1.6;">Look for the bronze plaque on the northern wall of the courtyard — the initials carved there are the key.</p>
+            </div>
+          </sc-if>
+
+        </div>
+        <!-- / clue card -->
+
+      </div>
+      <!-- / scrollable -->
+
+      <!-- Bottom fixed input -->
+      <div style="flex-shrink:0; background:#0A0A0A; border-top:1px solid #2C2C2E; padding:12px 16px 28px;">
+        <div style="display:flex; gap:8px; align-items:center;">
+          <input
+            type="text"
+            value="{{ inputVal }}"
+            onChange="{{ onInput }}"
+            onFocus="{{ onFocus }}"
+            onBlur="{{ onBlur }}"
+            placeholder="Enter code"
+            style="flex:1; height:48px; background:#1C1C1E; border:{{ inputBorder }}; border-radius:12px; color:#fff; font-size:16px; font-weight:500; padding:0 16px; font-family:'Inter',sans-serif; letter-spacing:0.05em; transition:border-color 0.15s;"
+          />
+          <button
+            style="height:48px; padding:0 20px; background:#F5A623; border:none; border-radius:999px; color:#0A0A0A; font-size:15px; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif; opacity:{{ submitOpacity }}; transition:opacity 0.15s; flex-shrink:0; letter-spacing:-0.1px;">Submit</button>
+        </div>
+        <div style="text-align:center; font-size:12px; color:#8E8E93; margin-top:8px; letter-spacing:-0.1px;">5 attempts remaining</div>
+      </div>
+
+    </div>
+
+  </x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: { &quot;width&quot;: 500, &quot;height&quot;: 920 }
+}">
+class Component extends DCLogic {
+  state = { hintOpen: false, inputVal: '', focused: false };
+
+  renderVals() {
+    const { hintOpen, inputVal, focused } = this.state;
+    return {
+      darkMode: true,
+      hintOpen,
+      hintClosed: !hintOpen,
+      inputVal,
+      toggleHint: () => this.setState(s => ({ hintOpen: !s.hintOpen })),
+      onInput: (e) => this.setState({ inputVal: e.target.value }),
+      onFocus: () => this.setState({ focused: true }),
+      onBlur: () => this.setState({ focused: false }),
+      inputBorder: focused ? '1.5px solid #F5A623' : '1.5px solid #3A3A3C',
+      submitOpacity: inputVal.trim() ? 1 : 0.4,
+    };
+  }
+}
+</script>
+<script>
+(async () => {
+  // Prepend so page-supplied @page / break rules (deck-stage's margin:0,
+  // author CSS) keep source-order precedence over the baseline.
+  const baseCss = document.createElement('style');
+  baseCss.textContent = "@media print {\n  @page { margin: 0.5cm; }\n  html, body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }\n  section, article, figure, table { break-inside: avoid; }\n  *, *::before, *::after {\n    animation-delay: -99s !important; animation-duration: .001s !important;\n    animation-iteration-count: 1 !important; animation-fill-mode: both !important;\n    animation-play-state: running !important; transition-duration: 0s !important;\n  }\n}";
+  document.head.prepend(baseCss);
+  if (document.readyState === 'loading') {
+    await new Promise((r) => document.addEventListener('DOMContentLoaded', r, { once: true }));
+  }
+  let ds = document.querySelector('deck-stage');
+  // whenDefined never resolves when nothing registers the element, so only
+  // await it when a <deck-stage> tag exists (and race a timeout regardless).
+  if (ds && !customElements.get('deck-stage')) {
+    try {
+      await Promise.race([
+        customElements.whenDefined('deck-stage'),
+        new Promise((r) => setTimeout(r, 3000)),
+      ]);
+    } catch (e) {}
+    ds = document.querySelector('deck-stage');
+  }
+  // dc-runtime assigns window.DCLogic at init and mounts into #dc-root on
+  // DOMContentLoaded; settle on that subtree so React has rendered before
+  // print(). Non-DC pages fall through to weighing body.
+  const isDc = !ds && 'DCLogic' in window;
+  const settleRoot = ds || (isDc ? document.getElementById('dc-root') : null) || document.body;
+  if (settleRoot) {
+    // Weigh only content children — skip script/style/template so inline
+    // Babel/CSS doesn't register as stable "content" before the framework
+    // has mounted anything.
+    const MEDIA = 'img,svg,canvas,video,picture,iframe,embed,object';
+    const weigh = () => {
+      let text = 0, media = 0;
+      for (const c of settleRoot.children) {
+        const t = c.tagName;
+        if (t === 'SCRIPT' || t === 'STYLE' || t === 'TEMPLATE') continue;
+        text += (c.textContent || '').trim().length;
+        media += c.querySelectorAll(MEDIA).length + (c.matches(MEDIA) ? 1 : 0);
+      }
+      return text + media * 100;
+    };
+    // "Non-zero and stable" alone is not sufficient to mean rendered: generic
+    // body can carry a static shell while async main content is pending, and
+    // #dc-root can carry the root DC's static text while child refs are still
+    // .sc-placeholder boxes. Gate generic on readyState 'complete', and never
+    // accept stability while a dc-runtime placeholder is present.
+    const isGeneric = settleRoot === document.body;
+    const deadline = Date.now() + 15000;
+    let last = -1, stable = 0;
+    while (Date.now() < deadline) {
+      const n = weigh();
+      const ready =
+        (!isGeneric || document.readyState === 'complete') &&
+        !settleRoot.querySelector('.sc-placeholder');
+      if (n > 0 && n === last && ready) { if (++stable >= 2) break; } else { stable = 0; }
+      last = n;
+      await new Promise((r) => setTimeout(r, 250));
+    }
+  }
+  try { await document.fonts.ready; } catch (e) {}
+  // Jump every animation to its end state so print() never captures a slide
+  // mid-entrance. Ordering matters: the 0s-transition style must be live
+  // BEFORE data-deck-active is set so attribute-keyed transitions don't
+  // start a (now-0s) run from the pre-active base.
+  const st = document.createElement('style');
+  st.textContent = '*,*::before,*::after{animation-delay:-99s !important;animation-duration:.001s !important;animation-iteration-count:1 !important;animation-fill-mode:both !important;animation-play-state:running !important;transition-duration:0s !important}';
+  document.head.appendChild(st);
+  for (const d of document.querySelectorAll('deck-stage')) {
+    for (const c of d.children) {
+      const t = c.tagName;
+      if (t === 'SCRIPT' || t === 'STYLE' || t === 'TEMPLATE') continue;
+      c.setAttribute('data-deck-active', '');
+    }
+  }
+  try {
+    const sweep = () => {
+      for (const a of document.getAnimations()) {
+        try { a.finish(); } catch (e) {
+          try { a.currentTime = (a.effect && a.effect.getComputedTiming().duration) || 0; a.pause(); } catch (e2) {}
+        }
+      }
+    };
+    sweep();
+    await new Promise((r) => requestAnimationFrame(r));
+    sweep();
+    await new Promise((r) => requestAnimationFrame(r));
+  } catch (e) {}
+  setTimeout(() => { try { window.print(); } catch (e) {} }, 200);
+})();
+</script>
+</body>
+</html>

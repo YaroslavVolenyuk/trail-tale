@@ -1,0 +1,150 @@
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { Screen, Logo } from '@/shared/ui';
+import { usePublishedQuests } from '@/shared/lib/queries';
+import type { PublishedQuest } from '@/shared/lib/queries';
+
+function getLang(raw: string): string {
+  return ['ua', 'en', 'de'].includes(raw) ? raw : 'en';
+}
+
+// Accent colors for the icon badge (cycles if no cover_gradient)
+const BADGE_COLORS = ['#1e3c72', '#2d1b69', '#4a1942', '#0f3460'];
+
+function QuestCard({
+  quest,
+  index,
+  lang,
+  onClick,
+}: {
+  quest: PublishedQuest;
+  index: number;
+  lang: string;
+  onClick: () => void;
+}) {
+  const title = quest.title[lang] ?? quest.title['en'] ?? '';
+  const description = quest.description[lang] ?? quest.description['en'] ?? '';
+  const badgeBg = BADGE_COLORS[index % BADGE_COLORS.length];
+
+  return (
+    <button
+      onClick={onClick}
+      className="w-full text-left rounded-[20px] bg-surface px-4 py-4 flex items-start gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 active:scale-[0.98] transition-transform"
+    >
+      {/* Icon badge */}
+      <div
+        className="flex-shrink-0 w-12 h-12 rounded-[14px] flex items-center justify-center mt-0.5"
+        style={{ background: quest.cover_gradient ?? badgeBg }}
+        aria-hidden="true"
+      >
+        <svg width="22" height="26" viewBox="0 0 60 72" fill="none">
+          <path
+            d="M30 4C18 4 8 14 8 26C8 40 18 54 30 68C42 54 52 40 52 26C52 14 42 4 30 4Z"
+            fill="white"
+            opacity="0.9"
+          />
+          <circle cx="30" cy="23" r="8.5" fill="#F5A623" />
+          <path d="M26 30L23 45H37L34 30H26Z" fill="#F5A623" />
+        </svg>
+      </div>
+
+      {/* Text */}
+      <div className="flex-1 min-w-0">
+        {quest.city && (
+          <p className="text-[11px] font-semibold text-accent tracking-[0.12em] uppercase mb-0.5">
+            {quest.city}
+          </p>
+        )}
+        <h2 className="text-[17px] font-bold text-white leading-snug tracking-tight">
+          {title}
+        </h2>
+        {description && (
+          <p className="text-[13px] text-text-muted mt-1 leading-relaxed line-clamp-2">
+            {description}
+          </p>
+        )}
+      </div>
+
+      {/* Chevron */}
+      <svg
+        className="flex-shrink-0 mt-1 text-text-muted"
+        width="8" height="14" viewBox="0 0 8 14" fill="none"
+        aria-hidden="true"
+      >
+        <path d="M1 1L7 7L1 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </button>
+  );
+}
+
+function QuestCardSkeleton() {
+  return (
+    <div className="w-full rounded-[20px] bg-surface px-4 py-4 flex items-start gap-4">
+      <div className="flex-shrink-0 w-12 h-12 rounded-[14px] bg-surface-raised animate-pulse" />
+      <div className="flex-1 space-y-2 pt-1">
+        <div className="h-2.5 w-14 bg-surface-raised rounded animate-pulse" />
+        <div className="h-4 w-1/2 bg-surface-raised rounded animate-pulse" />
+        <div className="h-3 w-full bg-surface-raised rounded animate-pulse" />
+      </div>
+    </div>
+  );
+}
+
+export default function QuestListScreen() {
+  const { t, i18n } = useTranslation('common');
+  const navigate = useNavigate();
+  const lang = getLang(i18n.language);
+  const { data: quests, isLoading, error } = usePublishedQuests();
+
+  return (
+    <Screen>
+      {/* Header */}
+      <div className="flex-shrink-0 px-5 pt-[max(env(safe-area-inset-top),20px)] pb-5">
+        <div className="flex items-center gap-3">
+          <Logo size={32} />
+          <span className="text-[20px] font-bold text-white tracking-tight">TrailTale</span>
+        </div>
+        <h1 className="text-[28px] font-bold text-white mt-5 tracking-tight">
+          {t('chooseQuest')}
+        </h1>
+        <p className="text-[14px] text-text-muted mt-1">{t('chooseQuestSub')}</p>
+      </div>
+
+      {/* Quest list */}
+      <main className="flex-1 overflow-y-auto px-4 pb-10">
+        {isLoading && (
+          <div className="space-y-3">
+            <QuestCardSkeleton />
+            <QuestCardSkeleton />
+          </div>
+        )}
+
+        {error && (
+          <div className="flex-1 flex items-center justify-center text-text-muted text-center px-6 mt-16">
+            {t('loadError')}
+          </div>
+        )}
+
+        {!isLoading && !error && quests?.length === 0 && (
+          <div className="flex items-center justify-center text-text-muted text-center px-6 mt-16">
+            {t('noQuests')}
+          </div>
+        )}
+
+        {!isLoading && !error && quests && quests.length > 0 && (
+          <div className="space-y-3">
+            {quests.map((quest, i) => (
+              <QuestCard
+                key={quest.id}
+                quest={quest}
+                index={i}
+                lang={lang}
+                onClick={() => navigate(`/q/${quest.slug}`)}
+              />
+            ))}
+          </div>
+        )}
+      </main>
+    </Screen>
+  );
+}

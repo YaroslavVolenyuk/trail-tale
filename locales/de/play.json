@@ -1,0 +1,16 @@
+{
+  "clue": "Hinweis",
+  "needHint": "Tipp benötigt?",
+  "hint": "Tipp",
+  "enterCode": "Code eingeben",
+  "scanQr": "QR scannen",
+  "correct": "Richtig!",
+  "youFound": "Du hast gefunden:",
+  "nextClue": "Nächster Hinweis",
+  "incorrect": "Falscher Code. Nochmal versuchen.",
+  "tryAgain": "Nochmal versuchen",
+  "rateLimited": "Zu viele Versuche. Warte {{seconds}}s.",
+  "attemptsRemaining": "{{count}} Versuche übrig",
+  "finish": "Ziel! 🎉",
+  "questNotFound": "Quest nicht gefunden."
+}
