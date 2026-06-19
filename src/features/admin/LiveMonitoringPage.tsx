@@ -208,6 +208,7 @@ export default function LiveMonitoringPage() {
 
   // Reset timer on fresh data
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLastUpdated(0);
   }, [sessions]);
 

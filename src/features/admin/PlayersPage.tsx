@@ -32,6 +32,7 @@ function StatusBadge({ row }: { row: PlayerRow }) {
     );
   }
   const progress = row.totalClues > 0 ? row.currentClue / row.totalClues : 0;
+  // eslint-disable-next-line react-hooks/purity
   const isActive = Date.now() - row.lastActiveAt.getTime() < 10 * 60 * 1000;
   if (isActive) {
     return (

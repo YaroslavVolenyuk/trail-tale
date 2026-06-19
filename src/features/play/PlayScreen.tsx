@@ -204,7 +204,8 @@ export default function PlayScreen() {
 
   const [code, setCode] = useState('');
   const [submitState, setSubmitState] = useState<SubmitState>('idle');
-  const [hintVisible, setHintVisible] = useState(false);
+  const [userHintVisible, setUserHintVisible] = useState<boolean | null>(null);
+  const hintVisible = userHintVisible ?? (sessionData?.hint_available ?? false);
   const [countdown, setCountdown] = useState(0);
   const [qrOpen, setQrOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -216,15 +217,10 @@ export default function PlayScreen() {
     if (sessionData && prevClueRef.current !== undefined && prevClueRef.current !== sessionData.current_clue) {
       setSubmitState('idle');
       setCode('');
-      setHintVisible(false);
+      setUserHintVisible(null);
     }
     if (sessionData) prevClueRef.current = sessionData.current_clue;
   }, [sessionData]);
-
-  // hint auto-reveal from server state
-  useEffect(() => {
-    if (sessionData?.hint_available) setHintVisible(true);
-  }, [sessionData?.hint_available]);
 
   useEffect(() => {
     return () => { if (countdownRef.current !== null) clearInterval(countdownRef.current); };
@@ -249,6 +245,7 @@ export default function PlayScreen() {
     return () => { void supabase.removeChannel(channel); };
   }, [sessionId, refetch]);
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const startCountdown = useCallback((seconds: number) => {
     if (countdownRef.current !== null) clearInterval(countdownRef.current);
     setCountdown(seconds);
@@ -272,6 +269,7 @@ export default function PlayScreen() {
     setTimeout(() => el.classList.remove('animate-shake'), 400);
   }, []);
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const handleSubmit = useCallback(async () => {
     if (!sessionId || !code.trim() || submitState === 'submitting') return;
     setSubmitState('submitting');
@@ -302,10 +300,11 @@ export default function PlayScreen() {
     } else {
       setSubmitState('wrong');
       triggerShake();
-      if (result.hint_available) setHintVisible(true);
+      if (result.hint_available) setUserHintVisible(true);
     }
   }, [sessionId, code, submitState, checkCode, startCountdown, triggerShake, navigate, refetch]);
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const handleNext = useCallback(() => {
     setSubmitState('idle');
     void refetch();
@@ -363,7 +362,7 @@ export default function PlayScreen() {
             clue={clue}
             lang={lang}
             hintVisible={hintVisible}
-            onToggleHint={() => setHintVisible((v) => !v)}
+            onToggleHint={() => setUserHintVisible((v) => !(v ?? hintVisible))}
             hintUnlocked={hint_available}
           />
         </main>

@@ -79,7 +79,7 @@ begin
     substr('ABCDEFGHJKMNPQRSTUVWXYZ23456789', ceil(random() * 31)::int, 1),
     substr('ABCDEFGHJKMNPQRSTUVWXYZ23456789', ceil(random() * 31)::int, 1)
   );
-  v_hash := encode(digest(v_recovery, 'sha256'), 'hex');
+  v_hash := md5(replace(v_recovery, '-', ''));
 
   insert into sessions (quest_id, team_id, device_id, nickname, lang, is_test, recovery_code_hash)
     values (v_quest_id, p_team_id, p_device_id, p_nickname, p_lang, p_is_test, v_hash)
@@ -107,7 +107,7 @@ declare
   v_hash       text;
   v_session_id uuid;
 begin
-  v_hash := encode(digest(upper(trim(p_code)), 'sha256'), 'hex');
+  v_hash := md5(upper(replace(trim(p_code), '-', '')));
 
   select id into v_session_id
     from sessions

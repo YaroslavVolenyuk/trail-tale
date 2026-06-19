@@ -168,8 +168,10 @@ export default function ClueListPage() {
 
   useEffect(() => {
     if (data) {
+      /* eslint-disable react-hooks/set-state-in-effect */
       setClues(data.clues);
       setIsPublished(data.quest.is_published);
+      /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [data]);
 

@@ -1,25 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'framer-motion';
-
-export const CONSENT_VERSION = 'v1.2025-01';
-const CONSENT_KEY = 'tt:consent';
-
-export function hasConsent(): boolean {
-  try {
-    return localStorage.getItem(CONSENT_KEY) === CONSENT_VERSION;
-  } catch {
-    return false;
-  }
-}
-
-export function grantConsent(): void {
-  try {
-    localStorage.setItem(CONSENT_KEY, CONSENT_VERSION);
-  } catch {
-    /* private mode — ignore */
-  }
-}
+import { grantConsent } from '@/shared/lib/gdprUtils';
 
 interface GdprModalProps {
   open: boolean;
@@ -40,7 +22,6 @@ export function GdprModal({ open, onAgree, onClose }: GdprModalProps) {
     <AnimatePresence>
       {open && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -51,7 +32,6 @@ export function GdprModal({ open, onAgree, onClose }: GdprModalProps) {
             aria-hidden="true"
           />
 
-          {/* Sheet */}
           <motion.div
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
@@ -62,20 +42,15 @@ export function GdprModal({ open, onAgree, onClose }: GdprModalProps) {
             aria-labelledby="gdpr-title"
             className="fixed bottom-0 inset-x-0 z-50 bg-bg rounded-t-[24px] px-6 pt-5 pb-[max(env(safe-area-inset-bottom),28px)]"
           >
-            {/* Handle */}
             <div className="w-10 h-1 rounded-full bg-border mx-auto mb-5" aria-hidden="true" />
 
-            <h2
-              id="gdpr-title"
-              className="text-[20px] font-bold text-white tracking-tight mb-2"
-            >
+            <h2 id="gdpr-title" className="text-[20px] font-bold text-white tracking-tight mb-2">
               {t('gdpr.title')}
             </h2>
             <p className="text-[14px] text-text-body leading-relaxed mb-5">
               {t('gdpr.body')}
             </p>
 
-            {/* Checkbox */}
             <label className="flex items-start gap-3 cursor-pointer mb-6 group">
               <span
                 role="checkbox"

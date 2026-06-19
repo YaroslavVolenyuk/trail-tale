@@ -84,7 +84,7 @@ async function toWebp(file: File, maxPx = 1280): Promise<Blob> {
       if (!ctx) return reject(new Error('Canvas context unavailable'));
       ctx.drawImage(img, 0, 0, w, h);
       canvas.toBlob(
-        (blob) => { blob ? resolve(blob) : reject(new Error('Canvas toBlob failed')); },
+        (blob) => { if (blob) { resolve(blob); } else { reject(new Error('Canvas toBlob failed')); } },
         'image/webp',
         0.85,
       );
@@ -282,7 +282,7 @@ async function openPrintQR({
     <p class="code">${code}</p>
     <p class="hint">Scan or enter code manually</p>
   </div>
-  <script>window.onload = () => { window.print(); }<\/script>
+  <script>window.onload = () => { window.print(); }</script>
 </body>
 </html>`);
   win.document.close();
@@ -311,8 +311,7 @@ export default function ClueEditorPage() {
   const mediaInitialised = useRef(false);
   if (clue && !mediaInitialised.current) {
     mediaInitialised.current = true;
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    Promise.resolve().then(() => setMediaUrl(clue.media_url ?? null));
+    void Promise.resolve().then(() => setMediaUrl(clue.media_url ?? null));
   }
 
   const langLabels: Record<Lang, string> = { ua: '🇺🇦 UA', en: '🇬🇧 EN', de: '🇦🇹 DE' };

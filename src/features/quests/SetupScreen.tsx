@@ -3,7 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import i18n from '@/shared/i18n';
 import { Screen, TopBar, Pill, Button, BottomDock, SectionLabel } from '@/shared/ui';
-import { GdprModal, hasConsent } from '@/shared/ui/GdprModal';
+import { GdprModal } from '@/shared/ui/GdprModal';
+import { hasConsent } from '@/shared/lib/gdprUtils';
 import type { Lang } from '@/shared/lib/mockData';
 
 type Mode = 'solo' | 'team';
@@ -20,7 +21,6 @@ const LANGS: { code: Lang; label: string }[] = [
 ];
 
 interface ModeCardProps {
-  mode: Mode;
   active: boolean;
   icon: string;
   label: string;
@@ -28,7 +28,7 @@ interface ModeCardProps {
   onClick: () => void;
 }
 
-function ModeCard({ mode: _mode, active, icon, label, description, onClick }: ModeCardProps) {
+function ModeCard({ active, icon, label, description, onClick }: ModeCardProps) {
   return (
     <button
       role="radio"
@@ -107,7 +107,6 @@ export default function SetupScreen() {
         <SectionLabel>{t('howDoYouPlay')}</SectionLabel>
         <div role="radiogroup" aria-label={t('howDoYouPlay')} className="flex flex-col gap-3">
           <ModeCard
-            mode="solo"
             active={mode === 'solo'}
             icon="🧭"
             label={t('solo')}
@@ -115,7 +114,6 @@ export default function SetupScreen() {
             onClick={() => setMode('solo')}
           />
           <ModeCard
-            mode="team"
             active={mode === 'team'}
             icon="👥"
             label={t('team')}
