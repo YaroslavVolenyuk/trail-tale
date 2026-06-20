@@ -5,7 +5,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Screen, ProgressBar, Button, BottomDock } from '@/shared/ui';
 import { TextInput } from '@/shared/ui';
 import { useSession, useCheckClueCode } from '@/shared/lib/queries';
-import type { Lang } from '@/shared/lib/mockData';
+import type { Lang } from '@/shared/lib/lang';
+import i18n from '@/shared/i18n';
 import type { SessionClue } from '@/shared/lib/queries';
 import { QRScanner } from './QRScanner';
 import { supabase } from '@/shared/lib/supabase';
@@ -14,9 +15,35 @@ import { getDeviceId } from '@/shared/lib/deviceId';
 // ── Types ──────────────────────────────────────────────────────────────────
 type SubmitState = 'idle' | 'submitting' | 'wrong' | 'rateLimited' | 'correct';
 
-function getLang(raw: string): Lang {
-  const valid: Lang[] = ['ua', 'en', 'de'];
-  return valid.includes(raw as Lang) ? (raw as Lang) : 'en';
+const VALID_LANGS: Lang[] = ['uk', 'en', 'de'];
+
+function getLang(raw: string | null | undefined): Lang {
+  return VALID_LANGS.includes(raw as Lang) ? (raw as Lang) : 'en';
+}
+
+// ── LangPicker ──────────────────────────────────────────────────────────────
+const LANG_FLAGS: Record<Lang, string> = { uk: '🇺🇦', en: '🇬🇧', de: '🇦🇹' };
+
+function LangPicker({ lang, onChange }: { lang: Lang; onChange: (l: Lang) => void }) {
+  return (
+    <div className="flex gap-1" role="group" aria-label="Language">
+      {VALID_LANGS.map((l) => (
+        <button
+          key={l}
+          onClick={() => onChange(l)}
+          aria-pressed={lang === l}
+          className={[
+            'h-9 w-9 rounded-lg text-[22px] flex items-center justify-center transition-colors',
+            lang === l
+              ? 'bg-accent/15 ring-1 ring-accent/40'
+              : 'opacity-40 hover:opacity-80',
+          ].join(' ')}
+        >
+          {LANG_FLAGS[l]}
+        </button>
+      ))}
+    </div>
+  );
 }
 
 function getLocalizedString(obj: Record<Lang, string> | null | undefined, lang: Lang): string {
@@ -197,10 +224,18 @@ export default function PlayScreen() {
   const navigate = useNavigate();
   const { sessionId } = useParams<{ sessionId: string }>();
 
-  const lang = getLang(localStorage.getItem('tt:lang') ?? 'en');
-
   const { data: sessionData, isLoading, error: sessionError, refetch } = useSession(sessionId ?? '');
   const checkCode = useCheckClueCode();
+
+  // Lang: read from localStorage (SetupScreen writes it when starting the quest).
+  // Switching during gameplay saves back to localStorage so the choice persists on refresh.
+  const [lang, setLang] = useState<Lang>(() => getLang(localStorage.getItem('tt:lang')));
+
+  const handleLangChange = useCallback((newLang: Lang) => {
+    setLang(newLang);
+    void i18n.changeLanguage(newLang);
+    localStorage.setItem('tt:lang', newLang);
+  }, []);
 
   const [code, setCode] = useState('');
   const [submitState, setSubmitState] = useState<SubmitState>('idle');
@@ -245,7 +280,6 @@ export default function PlayScreen() {
     return () => { void supabase.removeChannel(channel); };
   }, [sessionId, refetch]);
 
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const startCountdown = useCallback((seconds: number) => {
     if (countdownRef.current !== null) clearInterval(countdownRef.current);
     setCountdown(seconds);
@@ -269,12 +303,12 @@ export default function PlayScreen() {
     setTimeout(() => el.classList.remove('animate-shake'), 400);
   }, []);
 
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
-  const handleSubmit = useCallback(async () => {
-    if (!sessionId || !code.trim() || submitState === 'submitting') return;
+  const handleSubmit = useCallback(async (overrideCode?: string) => {
+    const value = (overrideCode ?? code).trim();
+    if (!sessionId || !value || submitState === 'submitting') return;
     setSubmitState('submitting');
 
-    const result = await checkCode.mutateAsync({ sessionId, code: code.trim(), deviceId: getDeviceId() }).catch(() => null);
+    const result = await checkCode.mutateAsync({ sessionId, code: value, deviceId: getDeviceId() }).catch(() => null);
     if (!result) {
       setSubmitState('idle');
       return;
@@ -304,7 +338,6 @@ export default function PlayScreen() {
     }
   }, [sessionId, code, submitState, checkCode, startCountdown, triggerShake, navigate, refetch]);
 
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const handleNext = useCallback(() => {
     setSubmitState('idle');
     void refetch();
@@ -325,8 +358,7 @@ export default function PlayScreen() {
   }
 
   const { clue, current_clue, total_clues, hint_available, attempts_before_hint, wrongs_on_clue } = sessionData;
-  const questTitle = (sessionData as unknown as { quest?: { title?: Record<Lang, string> } })?.quest?.title;
-  const displayTitle = questTitle ? getLocalizedString(questTitle, lang) : 'TrailTale';
+  const displayTitle = getLocalizedString(sessionData.quest_title, lang) || 'TrailTale';
   const attemptsLeft = Math.max(0, attempts_before_hint - wrongs_on_clue);
 
   const isWrong = submitState === 'wrong';
@@ -347,9 +379,10 @@ export default function PlayScreen() {
   return (
     <>
       <Screen>
-        <div className="flex-shrink-0 flex items-center justify-between px-5 py-3">
-          <span className="text-[15px] font-semibold text-white tracking-tight">{displayTitle}</span>
-          <span className="text-[15px] font-semibold text-accent tracking-tight">
+        <div className="flex-shrink-0 flex items-center gap-2 px-3 py-2">
+          <LangPicker lang={lang} onChange={handleLangChange} />
+          <span className="text-[15px] font-semibold text-white tracking-tight flex-1 truncate">{displayTitle}</span>
+          <span className="text-[15px] font-semibold text-accent tracking-tight flex-shrink-0">
             {current_clue + 1} / {total_clues}
           </span>
         </div>
@@ -453,8 +486,7 @@ export default function PlayScreen() {
           setCode(scannedCode);
           setQrOpen(false);
           if (submitState === 'wrong') setSubmitState('idle');
-          // auto-submit after a short delay so user sees the filled code
-          setTimeout(() => { void handleSubmit(); }, 150);
+          void handleSubmit(scannedCode);
         }}
         onClose={() => setQrOpen(false)}
       />

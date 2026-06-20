@@ -194,9 +194,9 @@ export default function LiveMonitoringPage() {
   const { data: questData } = useAdminQuest(slug ?? '');
   const questId = questData?.quest.id ?? '';
   const totalClues = questData?.clues.length ?? 0;
-  const questTitle = (questData?.quest.title['en'] ?? questData?.quest.title['ua'] ?? slug) as string;
+  const questTitle = (questData?.quest.title['en'] ?? questData?.quest.title['uk'] ?? slug) as string;
 
-  const { data: sessions = [], isLoading } = useLiveSessions(questId, totalClues);
+  const { data: sessions = [], isLoading, dataUpdatedAt } = useLiveSessions(questId, totalClues);
   const resetSession = useAdminResetSession(questId);
   const skipClue = useAdminSkipClue(questId);
   const deleteSession = useAdminDeleteSession(questId);
@@ -215,7 +215,7 @@ export default function LiveMonitoringPage() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLastUpdated(0);
-  }, [sessions]);
+  }, [dataUpdatedAt]);
 
   const refresh = useCallback(() => {
     setLastUpdated(0);

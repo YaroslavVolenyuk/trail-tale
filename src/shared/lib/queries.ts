@@ -3,7 +3,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
-import type { Lang } from './mockData';
+import type { Lang } from './lang';
 
 // ── Utility ───────────────────────────────────────────────────────────────────
 
@@ -35,10 +35,14 @@ export interface SessionClue {
 export interface SessionData {
   session_id: string;
   quest_id: string;
+  quest_slug: string;
+  quest_title: Record<Lang, string>;
+  quest_intro: Record<Lang, string> | null;
   nickname: string;
   lang: Lang;
   current_clue: number;
   total_clues: number;
+  started_at: string;
   finished_at: string | null;
   clue: SessionClue | null;
   wrongs_on_clue: number;
@@ -239,6 +243,7 @@ export interface AdminQuest {
   slug: string;
   title: Record<string, string>;
   description: Record<string, string>;
+  intro: Record<string, string> | null;
   city: string | null;
   is_published: boolean;
   attempts_before_hint: number;
@@ -269,26 +274,15 @@ export function useAdminQuests() {
     queryKey: ['admin', 'quests'],
     queryFn: async (): Promise<AdminQuest[]> => {
       const { data: quests, error } = await supabase
-        .from('quests')
+        .from('quests_with_counts')
         .select('*')
         .order('created_at', { ascending: false });
       if (error) throw error;
-
-      // fetch clue counts separately
-      const { data: clueCounts } = await supabase
-        .from('clues')
-        .select('quest_id');
-
-      const countMap: Record<string, number> = {};
-      for (const c of clueCounts ?? []) {
-        countMap[c.quest_id] = (countMap[c.quest_id] ?? 0) + 1;
-      }
 
       return (quests ?? []).map((q) => ({
         ...q,
         title: q.title as Record<string, string>,
         description: q.description as Record<string, string>,
-        clue_count: countMap[q.id] ?? 0,
       }));
     },
     staleTime: 5_000,
@@ -316,7 +310,12 @@ export function useAdminQuest(slug: string) {
       if (cErr) throw cErr;
 
       return {
-        quest: { ...quest, title: quest.title as Record<string, string>, description: quest.description as Record<string, string> },
+        quest: {
+          ...quest,
+          title: quest.title as Record<string, string>,
+          description: quest.description as Record<string, string>,
+          intro: (quest.intro ?? null) as Record<string, string> | null,
+        },
         clues: (clues ?? []).map((c) => ({
           ...c,
           title: c.title as Record<string, string>,
@@ -365,7 +364,7 @@ export function useCreateQuest() {
 export function useUpdateQuest(slug: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (patch: Partial<{ is_published: boolean; attempts_before_hint: number; city: string }>) => {
+    mutationFn: async (patch: Partial<{ is_published: boolean; attempts_before_hint: number; city: string; intro: Record<string, string> | null }>) => {
       const { error } = await supabase.from('quests').update(patch).eq('slug', slug);
       if (error) throw error;
     },
@@ -412,18 +411,12 @@ export function useDeleteClue(questSlug: string) {
 export function useReorderClues(questSlug: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (clues: { id: string; order: number }[]) => {
-      // Two-pass update to avoid unique(quest_id, order) constraint violations.
-      // Pass 1: shift all to a temp range (order + 10000) so no two rows collide.
-      for (const c of clues) {
-        const { error } = await supabase.from('clues').update({ order: c.order + 10000 }).eq('id', c.id);
-        if (error) throw error;
-      }
-      // Pass 2: set the real target orders.
-      for (const c of clues) {
-        const { error } = await supabase.from('clues').update({ order: c.order }).eq('id', c.id);
-        if (error) throw error;
-      }
+    mutationFn: async (args: { questId: string; orders: { id: string; order: number }[] }) => {
+      const { error } = await supabase.rpc('reorder_clues', {
+        p_quest_id: args.questId,
+        p_orders:   args.orders,
+      });
+      if (error) throw error;
     },
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['admin', 'quest', questSlug] }),
   });
@@ -850,6 +843,33 @@ export function useDeletePrompt() {
       if (error) throw error;
     },
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['admin', 'prompts'] }),
+  });
+}
+
+// ── useUpdateSessionLang ──────────────────────────────────────────────────────
+
+export function useUpdateSessionLang() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      sessionId,
+      lang,
+      deviceId,
+    }: {
+      sessionId: string;
+      lang: Lang;
+      deviceId: string;
+    }) => {
+      const { error } = await supabase.rpc('update_session_lang', {
+        p_session_id: sessionId,
+        p_lang:       lang,
+        p_device_id:  deviceId,
+      });
+      if (error) throw error;
+    },
+    onSuccess: (_data, { sessionId }) => {
+      void queryClient.invalidateQueries({ queryKey: ['session', sessionId] });
+    },
   });
 }
 

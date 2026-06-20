@@ -360,7 +360,7 @@ function ImportTab() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[15px] font-semibold text-adm-text">
-                {preview.title['en'] ?? preview.title['ua'] ?? preview.slug}
+                {preview.title['en'] ?? preview.title['uk'] ?? preview.slug}
               </p>
               <p className="text-[13px] text-adm-muted">
                 {preview.city && `${preview.city} · `}{preview.clues.length} clue{preview.clues.length !== 1 ? 's' : ''}

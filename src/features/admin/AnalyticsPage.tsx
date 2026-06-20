@@ -54,7 +54,7 @@ function CompletionBar({ value }: { value: number }) {
 // ── Quest row ────────────────────────────────────────────────────────────────
 
 function QuestRow({ q, onClick }: { q: QuestAnalytics; onClick: () => void }) {
-  const title = (q.questTitle['en'] ?? q.questTitle['ua'] ?? q.questSlug);
+  const title = (q.questTitle['en'] ?? q.questTitle['uk'] ?? q.questSlug);
 
   return (
     <tr

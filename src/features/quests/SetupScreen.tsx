@@ -5,17 +5,17 @@ import i18n from '@/shared/i18n';
 import { Screen, TopBar, Pill, Button, BottomDock, SectionLabel } from '@/shared/ui';
 import { GdprModal } from '@/shared/ui/GdprModal';
 import { hasConsent } from '@/shared/lib/gdprUtils';
-import type { Lang } from '@/shared/lib/mockData';
+import type { Lang } from '@/shared/lib/lang';
 
 type Mode = 'solo' | 'team';
 
-const VALID_LANGS: Lang[] = ['ua', 'en', 'de'];
+const VALID_LANGS: Lang[] = ['uk', 'en', 'de'];
 function parseLang(raw: string | null): Lang {
   return VALID_LANGS.includes(raw as Lang) ? (raw as Lang) : 'en';
 }
 
 const LANGS: { code: Lang; label: string }[] = [
-  { code: 'ua', label: '🇺🇦 UA' },
+  { code: 'uk', label: '🇺🇦 UA' },
   { code: 'en', label: '🇬🇧 EN' },
   { code: 'de', label: '🇦🇹 DE' },
 ];

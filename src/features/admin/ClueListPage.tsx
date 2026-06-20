@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -15,7 +15,7 @@ import {
   type AdminClue,
 } from '@/shared/lib/queries';
 
-type Lang = 'ua' | 'en' | 'de';
+type Lang = 'uk' | 'en' | 'de';
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 
@@ -111,8 +111,8 @@ function AddClueModal({ questId, nextOrder, questSlug, onClose }: {
     await saveClue.mutateAsync({
       quest_id: questId,
       order: nextOrder,
-      title: { ua: titleEn, en: titleEn, de: titleEn },
-      content: { ua: '', en: '', de: '' },
+      title: { uk: titleEn, en: titleEn, de: titleEn },
+      content: { uk: '', en: '', de: '' },
       code: code.trim().toUpperCase(),
     });
     onClose();
@@ -148,6 +148,100 @@ function AddClueModal({ questId, nextOrder, questSlug, onClose }: {
   );
 }
 
+// ── IntroEditor ───────────────────────────────────────────────────────────────
+
+function IntroEditor({
+  slug,
+  initialIntro,
+}: {
+  slug: string;
+  initialIntro: Record<string, string> | null;
+}) {
+  const langs: Lang[] = ['uk', 'en', 'de'];
+  const langLabels: Record<Lang, string> = { uk: '🇺🇦 UA', en: '🇬🇧 EN', de: '🇦🇹 DE' };
+  const updateQuest = useUpdateQuest(slug);
+
+  const [activeLang, setActiveLang] = useState<Lang>('uk');
+  const [values, setValues] = useState<Record<Lang, string>>({
+    uk: initialIntro?.['uk'] ?? '',
+    en: initialIntro?.['en'] ?? '',
+    de: initialIntro?.['de'] ?? '',
+  });
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Sync if parent data changes (first load or concurrent edit)
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setValues({
+      uk: initialIntro?.['uk'] ?? '',
+      en: initialIntro?.['en'] ?? '',
+      de: initialIntro?.['de'] ?? '',
+    });
+  }, [initialIntro?.['uk'], initialIntro?.['en'], initialIntro?.['de']]);
+
+  const handleChange = useCallback((lang: Lang, val: string) => {
+    const next = { uk: '', en: '', de: '', ...values, [lang]: val };
+    setValues((prev) => ({ ...prev, [lang]: val }));
+    setSaveState('idle');
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      setSaveState('saving');
+      updateQuest.mutateAsync({ intro: next })
+        .then(() => setSaveState('saved'))
+        .catch(() => setSaveState('error'));
+    }, 800);
+  }, [updateQuest, values]);
+
+  return (
+    <div className="border border-adm-border rounded-xl overflow-hidden mb-6">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 bg-adm-sidebar border-b border-adm-border">
+        <div>
+          <span className="text-[13px] font-semibold text-adm-text">Передісторія квесту</span>
+          <span className="text-[12px] text-adm-muted ml-2">— показується гравцю перед першою загадкою</span>
+        </div>
+        <div className="flex items-center gap-3">
+          {saveState === 'saving' && <span className="text-[12px] text-adm-muted">Зберігаємо…</span>}
+          {saveState === 'saved'  && <span className="text-[12px] text-adm-publishedFg">Збережено ✓</span>}
+          {saveState === 'error'  && <span className="text-[12px] text-danger">Помилка збереження!</span>}
+
+          {/* Lang tabs */}
+          <div className="flex border border-adm-border rounded-lg overflow-hidden">
+            {langs.map((l) => (
+              <button
+                key={l}
+                onClick={() => setActiveLang(l)}
+                className={[
+                  'px-3 py-1 text-[12px] font-medium transition-colors',
+                  activeLang === l ? 'bg-accent text-bg' : 'text-adm-muted hover:text-adm-text hover:bg-adm-border/40',
+                ].join(' ')}
+              >
+                {langLabels[l]}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Textarea */}
+      <div className="p-4">
+        <textarea
+          key={activeLang}
+          value={values[activeLang]}
+          onChange={(e) => handleChange(activeLang, e.target.value)}
+          placeholder={`Напишіть передісторію мовою «${langLabels[activeLang]}»…\n\nПриклад: «Місто спить. Але десь у вузьких вуличках старого кварталу ховається таємниця, яку ніхто не наважувався розкрити вже сто років…»`}
+          rows={7}
+          className="w-full bg-adm-bg border border-adm-border rounded-lg px-3.5 py-3 text-[14px] text-adm-text placeholder:text-adm-placeholder resize-none outline-none focus:border-accent transition-colors leading-relaxed"
+        />
+        <p className="text-[11px] text-adm-muted mt-1.5">
+          Підтримується переніс рядка. Зберігається автоматично.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function ClueListPage() {
@@ -175,8 +269,8 @@ export default function ClueListPage() {
     }
   }, [data]);
 
-  const langs: Lang[] = ['ua', 'en', 'de'];
-  const langLabels: Record<Lang, string> = { ua: '🇺🇦 UA', en: '🇬🇧 EN', de: '🇦🇹 DE' };
+  const langs: Lang[] = ['uk', 'en', 'de'];
+  const langLabels: Record<Lang, string> = { uk: '🇺🇦 UA', en: '🇬🇧 EN', de: '🇦🇹 DE' };
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
@@ -190,7 +284,10 @@ export default function ClueListPage() {
     if (oldIdx === -1 || newIdx === -1) return;
     const reordered = arrayMove(clues, oldIdx, newIdx).map((c, i) => ({ ...c, order: i }));
     setClues(reordered);
-    void reorderClues.mutate(reordered.map((c) => ({ id: c.id, order: c.order })));
+    void reorderClues.mutate({
+      questId: data!.quest.id,
+      orders: reordered.map((c) => ({ id: c.id, order: c.order })),
+    });
   };
 
   const handleTogglePublish = () => {
@@ -200,14 +297,14 @@ export default function ClueListPage() {
   };
 
   const handleDelete = async (clue: AdminClue) => {
-    if (!confirm(`Delete clue "${clue.title.en ?? clue.title.ua}"?`)) return;
+    if (!confirm(`Delete clue "${clue.title['en'] ?? clue.title['uk']}"?`)) return;
     setClues((cs) => cs.filter((c) => c.id !== clue.id));
     await deleteClue.mutateAsync(clue.id);
   };
 
   const activeClue = activeId ? clues.find((c) => c.id === activeId) : null;
   const activeIndex = activeId ? clues.findIndex((c) => c.id === activeId) : -1;
-  const questTitle = data?.quest.title.en ?? data?.quest.title.ua ?? slug ?? '';
+  const questTitle = data?.quest.title['en'] ?? data?.quest.title['uk'] ?? slug ?? '';
 
   if (isLoading) {
     return (
@@ -253,6 +350,9 @@ export default function ClueListPage() {
             </div>
           </label>
         </div>
+
+        {/* Quest intro editor */}
+        <IntroEditor slug={slug ?? ''} initialIntro={data.quest.intro} />
 
         {/* Clue list header */}
         <div className="flex items-center justify-between mb-3">

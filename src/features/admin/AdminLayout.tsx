@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/shared/lib/supabase';
+import i18n from '@/shared/i18n';
+import type { Lang } from '@/shared/lib/lang';
 
 // ── Icon primitives ──────────────────────────────────────────────────────────
 
@@ -61,6 +63,64 @@ function IconLogout() {
   );
 }
 
+// ── Admin language ────────────────────────────────────────────────────────────
+
+const ADMIN_LANGS: { code: Lang; label: string }[] = [
+  { code: 'uk', label: '🇺🇦' },
+  { code: 'en', label: '🇬🇧' },
+  { code: 'de', label: '🇦🇹' },
+];
+
+const ADMIN_LANG_KEY = 'tt:admin-lang';
+const VALID_LANGS: Lang[] = ['uk', 'en', 'de'];
+function isValidLang(v: string | null): v is Lang {
+  return VALID_LANGS.includes(v as Lang);
+}
+
+function useAdminLang() {
+  const [lang, setLangState] = useState<Lang>(() => {
+    const stored = localStorage.getItem(ADMIN_LANG_KEY);
+    return isValidLang(stored) ? stored : 'en';
+  });
+
+  // Apply stored preference on mount (overrides LanguageDetector which reads tt:lang)
+  useEffect(() => {
+    void i18n.changeLanguage(lang);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const setLang = useCallback((l: Lang) => {
+    setLangState(l);
+    localStorage.setItem(ADMIN_LANG_KEY, l);
+    void i18n.changeLanguage(l);
+  }, []);
+
+  return [lang, setLang] as const;
+}
+
+function AdminLangPicker({ lang, onChange }: { lang: Lang; onChange: (l: Lang) => void }) {
+  return (
+    <div className="flex gap-1 items-center" role="group" aria-label="Interface language">
+      {ADMIN_LANGS.map(({ code, label }) => (
+        <button
+          key={code}
+          onClick={() => onChange(code)}
+          aria-pressed={lang === code}
+          title={code.toUpperCase()}
+          className={[
+            'w-7 h-7 rounded-lg text-[16px] flex items-center justify-center transition-colors',
+            lang === code
+              ? 'bg-accent/15 ring-1 ring-accent/40'
+              : 'hover:bg-adm-border/60',
+          ].join(' ')}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 // ── Auth guard ────────────────────────────────────────────────────────────────
 
 type AuthState = 'loading' | 'authorized' | 'unauthorized';
@@ -72,44 +132,38 @@ function useAdminAuth(): AuthState {
   useEffect(() => {
     let mounted = true;
 
-    const check = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!mounted) return;
-
-      if (!user) {
+    const verify = async (userId: string | null) => {
+      if (!userId) {
+        if (!mounted) return;
         setState('unauthorized');
         navigate('/admin/login', { replace: true });
         return;
       }
-
-      // Verify membership in admins table
       const { data: admin } = await supabase
         .from('admins')
         .select('user_id')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .maybeSingle();
-
       if (!mounted) return;
-
       if (!admin) {
         await supabase.auth.signOut();
         setState('unauthorized');
         navigate('/admin/login', { replace: true });
         return;
       }
-
       setState('authorized');
     };
 
-    void check();
+    supabase.auth.getUser().then(({ data }) => verify(data.user?.id ?? null));
 
-    // Re-check on auth state changes (e.g. session expiry)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_OUT') {
-        if (mounted) {
-          setState('unauthorized');
-          navigate('/admin/login', { replace: true });
-        }
+    // Re-check on SIGNED_OUT, token refresh failures, and re-login
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (
+        event === 'SIGNED_OUT' ||
+        event === 'TOKEN_REFRESHED' ||
+        event === 'SIGNED_IN'
+      ) {
+        void verify(session?.user.id ?? null);
       }
     });
 
@@ -128,6 +182,7 @@ export default function AdminLayout() {
   const { t } = useTranslation('admin');
   const navigate = useNavigate();
   const authState = useAdminAuth();
+  const [adminLang, setAdminLang] = useAdminLang();
 
   const navItems = [
     { to: '/admin/quests',    label: t('nav.quests'),    Icon: IconQuests },
@@ -191,7 +246,8 @@ export default function AdminLayout() {
         </nav>
 
         {/* Footer */}
-        <div className="px-4 py-4 border-t border-adm-border">
+        <div className="px-4 py-4 border-t border-adm-border space-y-3">
+          <AdminLangPicker lang={adminLang} onChange={setAdminLang} />
           <button
             onClick={() => void handleLogout()}
             className="flex items-center gap-2.5 text-[13px] text-adm-muted hover:text-adm-text transition-colors w-full"

@@ -32,7 +32,7 @@ export default function CompleteScreen() {
   const nickname = sessionData?.nickname ?? '…';
 
   // compute stats from session
-  const startedAt = (sessionData as unknown as { started_at?: string } | null)?.started_at;
+  const startedAt = sessionData?.started_at;
   const finishedAt = sessionData?.finished_at;
   const elapsedMs =
     startedAt && finishedAt
@@ -42,7 +42,7 @@ export default function CompleteScreen() {
   const totalClues = sessionData?.total_clues ?? 0;
 
   const handleShare = async () => {
-    const questSlug = (sessionData as unknown as { quest?: { slug?: string } } | null)?.quest?.slug ?? '';
+    const questSlug = sessionData?.quest_slug ?? '';
     const payload = {
       title: 'TrailTale',
       text: `I completed a TrailTale quest in ${formatDuration(elapsedMs)}!`,

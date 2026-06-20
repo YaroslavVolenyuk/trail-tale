@@ -12,8 +12,11 @@ create table if not exists public.team_members (
 
 alter table public.team_members enable row level security;
 
-create policy "team_members public read"
-  on public.team_members for select using (true);
+do $$ begin
+  create policy "team_members public read"
+    on public.team_members for select using (true);
+exception when duplicate_object then null;
+end $$;
 
 -- ── Trigger: auto-insert leader when a session is created with a team_id ─────
 
@@ -31,6 +34,7 @@ begin
   return new;
 end $$;
 
+drop trigger if exists trg_auto_add_team_member on public.sessions;
 create trigger trg_auto_add_team_member
   after insert on public.sessions
   for each row execute function public.fn_auto_add_team_member();

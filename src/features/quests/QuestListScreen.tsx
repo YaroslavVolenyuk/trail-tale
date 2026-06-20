@@ -4,11 +4,11 @@ import { Screen, Logo, Pill } from '@/shared/ui';
 import { usePublishedQuests } from '@/shared/lib/queries';
 import type { PublishedQuest } from '@/shared/lib/queries';
 
-type Lang = 'ua' | 'en' | 'de';
+type Lang = 'uk' | 'en' | 'de';
 
-const VALID_LANGS: Lang[] = ['ua', 'en', 'de'];
+const VALID_LANGS: Lang[] = ['uk', 'en', 'de'];
 const LANGS: { code: Lang; label: string }[] = [
-  { code: 'ua', label: '🇺🇦 UA' },
+  { code: 'uk', label: '🇺🇦 UA' },
   { code: 'en', label: '🇬🇧 EN' },
   { code: 'de', label: '🇦🇹 DE' },
 ];

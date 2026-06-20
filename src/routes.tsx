@@ -8,6 +8,7 @@ const WelcomeScreen  = lazy(() => import('./features/quests/WelcomeScreen'));
 const SetupScreen    = lazy(() => import('./features/quests/SetupScreen'));
 const NicknameScreen = lazy(() => import('./features/quests/NicknameScreen'));
 const TeamScreen     = lazy(() => import('./features/teams/TeamScreen'));
+const IntroScreen    = lazy(() => import('./features/play/IntroScreen'));
 const PlayScreen     = lazy(() => import('./features/play/PlayScreen'));
 const CompleteScreen = lazy(() => import('./features/play/CompleteScreen'));
 
@@ -47,6 +48,7 @@ export const routes: RouteObject[] = [
   { path: '/q/:slug/nickname',         element: S(NicknameScreen) },
   { path: '/q/:slug/team',             element: S(TeamScreen) },
   { path: '/q/:slug/team/nickname',    element: S(NicknameScreen) },
+  { path: '/play/:sessionId/intro',    element: S(IntroScreen) },
   { path: '/play/:sessionId',          element: S(PlayScreen) },
   { path: '/play/:sessionId/complete', element: S(CompleteScreen) },
 

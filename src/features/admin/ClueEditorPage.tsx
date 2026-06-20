@@ -10,10 +10,10 @@ import { useAdminQuest, useSaveClue, useUpdateQuest } from '@/shared/lib/queries
 
 // ── Schema ────────────────────────────────────────────────────────────────────
 
-const langKeys = ['ua', 'en', 'de'] as const;
+const langKeys = ['uk', 'en', 'de'] as const;
 type Lang = (typeof langKeys)[number];
 
-const i18nField = z.object({ ua: z.string(), en: z.string(), de: z.string() });
+const i18nField = z.object({ uk: z.string(), en: z.string(), de: z.string() });
 
 const clueSchema = z.object({
   title: i18nField,
@@ -314,7 +314,7 @@ export default function ClueEditorPage() {
     void Promise.resolve().then(() => setMediaUrl(clue.media_url ?? null));
   }
 
-  const langLabels: Record<Lang, string> = { ua: '🇺🇦 UA', en: '🇬🇧 EN', de: '🇦🇹 DE' };
+  const langLabels: Record<Lang, string> = { uk: '🇺🇦 UA', en: '🇬🇧 EN', de: '🇦🇹 DE' };
 
   const {
     register,
@@ -328,17 +328,17 @@ export default function ClueEditorPage() {
     values: clue && quest
       ? {
           title: {
-            ua: (clue.title['ua'] ?? '') as string,
+            uk: (clue.title['uk'] ?? '') as string,
             en: (clue.title['en'] ?? '') as string,
             de: (clue.title['de'] ?? '') as string,
           },
           text: {
-            ua: (clue.content['ua'] ?? '') as string,
+            uk: (clue.content['uk'] ?? '') as string,
             en: (clue.content['en'] ?? '') as string,
             de: (clue.content['de'] ?? '') as string,
           },
           hint: {
-            ua: (clue.hint?.['ua'] ?? '') as string,
+            uk: (clue.hint?.['uk'] ?? '') as string,
             en: (clue.hint?.['en'] ?? '') as string,
             de: (clue.hint?.['de'] ?? '') as string,
           },
@@ -350,9 +350,9 @@ export default function ClueEditorPage() {
         }
       : undefined,
     defaultValues: {
-      title: { ua: '', en: '', de: '' },
-      text: { ua: '', en: '', de: '' },
-      hint: { ua: '', en: '', de: '' },
+      title: { uk: '', en: '', de: '' },
+      text: { uk: '', en: '', de: '' },
+      hint: { uk: '', en: '', de: '' },
       code: '',
       locationName: '',
       lat: null,
@@ -423,8 +423,8 @@ export default function ClueEditorPage() {
   if (!quest) return <div className="p-8 text-adm-muted">Quest not found.</div>;
   if (clueId && !clue) return <div className="p-8 text-adm-muted">Clue not found.</div>;
 
-  const questTitle = (quest.title['en'] ?? quest.title['ua'] ?? slug) as string;
-  const clueTitle = clue ? ((clue.title['en'] ?? clue.title['ua'] ?? '') as string) : 'New Clue';
+  const questTitle = (quest.title['en'] ?? quest.title['uk'] ?? slug) as string;
+  const clueTitle = clue ? ((clue.title['en'] ?? clue.title['uk'] ?? '') as string) : 'New Clue';
 
   const isSaving = saveClue.isPending || updateQuest.isPending;
 

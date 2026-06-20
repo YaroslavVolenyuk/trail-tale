@@ -67,7 +67,7 @@ function PlayerTableRow({
   onGoToLive: () => void;
   onDelete: () => void;
 }) {
-  const questTitle = row.questTitle['en'] ?? row.questTitle['ua'] ?? row.questSlug;
+  const questTitle = row.questTitle['en'] ?? row.questTitle['uk'] ?? row.questSlug;
   const displayName = row.teamName ?? row.nickname;
 
   return (
@@ -269,7 +269,7 @@ export default function PlayersPage() {
             <option value="">All quests</option>
             {quests.map((q) => (
               <option key={q.id} value={q.slug}>
-                {q.title['en'] ?? q.title['ua'] ?? q.slug}
+                {q.title['en'] ?? q.title['uk'] ?? q.slug}
               </option>
             ))}
           </select>
