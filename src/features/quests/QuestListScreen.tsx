@@ -1,11 +1,20 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Screen, Logo } from '@/shared/ui';
+import { Screen, Logo, Pill } from '@/shared/ui';
 import { usePublishedQuests } from '@/shared/lib/queries';
 import type { PublishedQuest } from '@/shared/lib/queries';
 
-function getLang(raw: string): string {
-  return ['ua', 'en', 'de'].includes(raw) ? raw : 'en';
+type Lang = 'ua' | 'en' | 'de';
+
+const VALID_LANGS: Lang[] = ['ua', 'en', 'de'];
+const LANGS: { code: Lang; label: string }[] = [
+  { code: 'ua', label: '🇺🇦 UA' },
+  { code: 'en', label: '🇬🇧 EN' },
+  { code: 'de', label: '🇦🇹 DE' },
+];
+
+function getLang(raw: string): Lang {
+  return VALID_LANGS.includes(raw as Lang) ? (raw as Lang) : 'en';
 }
 
 // Accent colors for the icon badge (cycles if no cover_gradient)
@@ -94,6 +103,11 @@ export default function QuestListScreen() {
   const { t, i18n } = useTranslation('common');
   const navigate = useNavigate();
   const lang = getLang(i18n.language);
+
+  const handleLangChange = (l: Lang) => {
+    void i18n.changeLanguage(l);
+    localStorage.setItem('tt:lang', l);
+  };
   const { data: quests, isLoading, error } = usePublishedQuests();
 
   return (
@@ -108,6 +122,16 @@ export default function QuestListScreen() {
           {t('chooseQuest')}
         </h1>
         <p className="text-[14px] text-text-muted mt-1">{t('chooseQuestSub')}</p>
+        <div role="radiogroup" aria-label={t('chooseLanguage')} className="flex gap-2 mt-4">
+          {LANGS.map((l) => (
+            <Pill
+              key={l.code}
+              label={l.label}
+              active={lang === l.code}
+              onClick={() => handleLangChange(l.code)}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Quest list */}

@@ -92,8 +92,13 @@ function SessionRow({
       {/* Team */}
       <td className={['px-4 py-3 text-[14px] font-medium', stuck ? 'border-l-[3px] border-danger' : ''].join(' ')}>
         <div className="text-adm-text">{session.teamName}</div>
+        {session.members.length > 0 && (
+          <div className="text-[12px] text-adm-muted mt-0.5">
+            {session.members.join(', ')}
+          </div>
+        )}
         {stuck && (
-          <div className="text-[12px] text-danger font-medium">
+          <div className="text-[12px] text-danger font-medium mt-0.5">
             {t('stuckOnClue', { n: session.currentClue })}
           </div>
         )}

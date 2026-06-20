@@ -75,9 +75,11 @@ function PlayerTableRow({
       {/* Name */}
       <td className="px-4 py-3">
         <div className="text-[14px] font-medium text-adm-text">{displayName}</div>
-        {row.teamName && (
+        {row.members.length > 0 ? (
+          <div className="text-[12px] text-adm-muted">{row.members.join(', ')}</div>
+        ) : row.teamName ? (
           <div className="text-[12px] text-adm-muted">{row.nickname}</div>
-        )}
+        ) : null}
       </td>
 
       {/* Quest */}

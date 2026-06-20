@@ -434,6 +434,7 @@ export function useReorderClues(questSlug: string) {
 export interface LiveSessionRow {
   id: string;
   teamName: string;          // team.name or nickname for solo
+  members: string[];         // nicknames of all team members (empty for solo)
   currentClue: number;
   totalClues: number;
   totalAttempts: number;
@@ -475,6 +476,21 @@ export function useLiveSessions(questId: string, totalClues: number) {
         }
       }
 
+      // Fetch team members for team sessions
+      const teamIds = [...new Set(sessions.map((s) => s.team_id).filter(Boolean))];
+      const membersMap: Record<string, string[]> = {};
+      if (teamIds.length) {
+        const { data: teamMembers } = await supabase
+          .from('team_members')
+          .select('team_id, nickname')
+          .in('team_id', teamIds)
+          .order('joined_at', { ascending: true });
+        for (const m of teamMembers ?? []) {
+          if (!membersMap[m.team_id]) membersMap[m.team_id] = [];
+          membersMap[m.team_id].push(m.nickname);
+        }
+      }
+
       return sessions.map((s) => {
         const teamName =
           (s.teams && !Array.isArray(s.teams) ? (s.teams as { name: string }).name : null) ??
@@ -482,6 +498,7 @@ export function useLiveSessions(questId: string, totalClues: number) {
         return {
           id: s.id,
           teamName,
+          members: s.team_id ? (membersMap[s.team_id] ?? []) : [],
           currentClue: s.current_clue,
           totalClues,
           totalAttempts: totalMap[s.id] ?? 0,
@@ -634,6 +651,7 @@ export interface PlayerRow {
   id: string;
   nickname: string;
   teamName: string | null;
+  members: string[];         // nicknames of all team members (empty for solo)
   questId: string;
   questSlug: string;
   questTitle: Record<string, string>;
@@ -653,7 +671,7 @@ export function usePlayers(questFilter?: string) {
       let sessionQuery = supabase
         .from('sessions')
         .select('id, nickname, team_id, quest_id, current_clue, started_at, last_active_at, finished_at, lang, is_test, teams(name)')
-        .eq('is_test', false)
+        .or('is_test.eq.false,is_test.is.null')
         .order('started_at', { ascending: false })
         .limit(500);
 
@@ -700,6 +718,21 @@ export function usePlayers(questFilter?: string) {
         attemptMap[a.session_id] = (attemptMap[a.session_id] ?? 0) + 1;
       }
 
+      // Fetch team members for team sessions
+      const teamIds2 = [...new Set(sessions.map((s) => s.team_id).filter(Boolean))];
+      const membersMap2: Record<string, string[]> = {};
+      if (teamIds2.length) {
+        const { data: teamMembers } = await supabase
+          .from('team_members')
+          .select('team_id, nickname')
+          .in('team_id', teamIds2)
+          .order('joined_at', { ascending: true });
+        for (const m of teamMembers ?? []) {
+          if (!membersMap2[m.team_id]) membersMap2[m.team_id] = [];
+          membersMap2[m.team_id].push(m.nickname);
+        }
+      }
+
       return sessions.map((s) => {
         const teamName =
           (s.teams && !Array.isArray(s.teams) ? (s.teams as { name: string }).name : null) ?? null;
@@ -708,6 +741,7 @@ export function usePlayers(questFilter?: string) {
           id: s.id,
           nickname: s.nickname,
           teamName,
+          members: s.team_id ? (membersMap2[s.team_id] ?? []) : [],
           questId: s.quest_id,
           questSlug: quest?.slug ?? '',
           questTitle: quest?.title ?? {},

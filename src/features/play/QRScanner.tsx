@@ -28,11 +28,11 @@ export function QRScanner({ open, onScan, onClose }: QRScannerProps) {
   useEffect(() => {
     if (!open) return;
 
-    setLoading(true);
-    setError(null);
     let stopped = false;
 
     (async () => {
+      setLoading(true);
+      setError(null);
       try {
         const reader = await getReader();
         if (stopped || !videoRef.current) return;
