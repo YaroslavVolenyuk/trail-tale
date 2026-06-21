@@ -289,6 +289,43 @@ export function useAdminQuests() {
   });
 }
 
+// ── useDeleteQuest ────────────────────────────────────────────────────────────
+
+const BUCKET = 'clue-media';
+
+export function useDeleteQuest() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (questId: string) => {
+      // 1. Collect media files attached to clues of this quest
+      const { data: clues } = await supabase
+        .from('clues')
+        .select('media_url')
+        .eq('quest_id', questId)
+        .not('media_url', 'is', null);
+
+      const paths = (clues ?? [])
+        .map((c) => c.media_url as string)
+        .filter(Boolean);
+
+      // 2. Delete media from Storage (best-effort, don't block on errors)
+      if (paths.length > 0) {
+        await supabase.storage.from(BUCKET).remove(paths);
+      }
+
+      // 3. Delete quest — clues cascade automatically
+      const { error } = await supabase
+        .from('quests')
+        .delete()
+        .eq('id', questId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['admin', 'quests'] });
+    },
+  });
+}
+
 // ── useAdminQuest ─────────────────────────────────────────────────────────────
 
 export function useAdminQuest(slug: string) {

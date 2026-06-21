@@ -1,7 +1,7 @@
 import { useDeferredValue, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAdminQuests, useCreateQuest, type AdminQuest } from '@/shared/lib/queries';
+import { useAdminQuests, useCreateQuest, useDeleteQuest, type AdminQuest } from '@/shared/lib/queries';
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 
@@ -18,6 +18,14 @@ function IconSearch() {
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.5" />
       <path d="M10.5 10.5L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function IconTrash() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+      <path d="M2 3.5h10M5.5 3.5V2.5h3v1M6 6.5v3M8 6.5v3M3 3.5l.7 7.5a.7.7 0 0 0 .7.5h5.2a.7.7 0 0 0 .7-.5L11 3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -99,6 +107,12 @@ function NewQuestModal({ onClose, onCreated }: { onClose: () => void; onCreated:
 function QuestCard({ quest }: { quest: AdminQuest }) {
   const { t } = useTranslation('admin');
   const navigate = useNavigate();
+  const deleteQuest = useDeleteQuest();
+
+  const handleDelete = async () => {
+    if (!window.confirm(`Delete "${quest.title.en ?? quest.slug}"? This cannot be undone.`)) return;
+    await deleteQuest.mutateAsync(quest.id);
+  };
 
   const gradients = [
     'linear-gradient(135deg, #1a1a2e, #16213e)',
@@ -143,6 +157,14 @@ function QuestCard({ quest }: { quest: AdminQuest }) {
             className="flex-1 h-[34px] rounded-lg border border-adm-border text-adm-muted text-[13px] font-medium hover:bg-adm-border/60 transition-colors"
           >
             {t('viewLive')} →
+          </button>
+          <button
+            onClick={() => void handleDelete()}
+            disabled={deleteQuest.isPending}
+            title="Delete quest"
+            className="h-[34px] w-[34px] flex items-center justify-center rounded-lg border border-adm-border text-adm-muted hover:border-red-400 hover:text-red-500 transition-colors disabled:opacity-40"
+          >
+            <IconTrash />
           </button>
         </div>
       </div>

@@ -11,7 +11,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import {
-  useAdminQuest, useDeleteClue, useReorderClues, useUpdateQuest, useSaveClue,
+  useAdminQuest, useDeleteClue, useDeleteQuest, useReorderClues, useUpdateQuest, useSaveClue,
   type AdminClue,
 } from '@/shared/lib/queries';
 
@@ -251,6 +251,7 @@ export default function ClueListPage() {
 
   const { data, isLoading } = useAdminQuest(slug ?? '');
   const deleteClue = useDeleteClue(slug ?? '');
+  const deleteQuest = useDeleteQuest();
   const reorderClues = useReorderClues(slug ?? '');
   const updateQuest = useUpdateQuest(slug ?? '');
 
@@ -302,6 +303,13 @@ export default function ClueListPage() {
     await deleteClue.mutateAsync(clue.id);
   };
 
+  const handleDeleteQuest = async () => {
+    if (!data) return;
+    if (!confirm(`Delete quest "${questTitle}"? All clues and media will be removed. This cannot be undone.`)) return;
+    await deleteQuest.mutateAsync(data.quest.id);
+    navigate('/admin/quests');
+  };
+
   const activeClue = activeId ? clues.find((c) => c.id === activeId) : null;
   const activeIndex = activeId ? clues.findIndex((c) => c.id === activeId) : -1;
   const questTitle = data?.quest.title['en'] ?? data?.quest.title['uk'] ?? slug ?? '';
@@ -349,6 +357,15 @@ export default function ClueListPage() {
               <span className={['absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform', isPublished ? 'translate-x-5' : 'translate-x-1'].join(' ')} />
             </div>
           </label>
+          <button
+            onClick={() => void handleDeleteQuest()}
+            disabled={deleteQuest.isPending}
+            title="Delete quest"
+            className="flex-shrink-0 h-[34px] px-3 flex items-center gap-1.5 rounded-lg border border-adm-border text-adm-muted text-[13px] hover:border-red-400 hover:text-red-500 transition-colors disabled:opacity-40"
+          >
+            <IconTrash />
+            Delete quest
+          </button>
         </div>
 
         {/* Quest intro editor */}
