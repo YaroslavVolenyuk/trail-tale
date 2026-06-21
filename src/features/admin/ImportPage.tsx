@@ -78,6 +78,7 @@ async function importQuest(quest: ImportQuest): Promise<string> {
         slug:                 questFields.slug,
         title:                normalizeLang(questFields.title),
         description:          normalizeLang(questFields.description),
+        intro:                normalizeLang(questFields.description), // backstory shown before first clue
         city:                 questFields.city ?? null,
         cover_gradient:       questFields.cover_gradient ?? null,
         attempts_before_hint: questFields.attempts_before_hint ?? 3,
