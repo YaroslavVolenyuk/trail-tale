@@ -60,6 +60,13 @@ function validateQuest(data: unknown): { ok: true; quest: ImportQuest } | { ok: 
 
 // ── Import logic ──────────────────────────────────────────────────────────────
 
+/** Rename "ua" key to "uk" in any localized string map (backward compat). */
+function normalizeLang(map: Record<string, string>): Record<string, string> {
+  if (!('ua' in map)) return map;
+  const { ua, ...rest } = map;
+  return { uk: ua, ...rest };
+}
+
 async function importQuest(quest: ImportQuest): Promise<string> {
   const { clues, ...questFields } = quest;
 
@@ -69,8 +76,8 @@ async function importQuest(quest: ImportQuest): Promise<string> {
     .upsert(
       {
         slug:                 questFields.slug,
-        title:                questFields.title,
-        description:          questFields.description,
+        title:                normalizeLang(questFields.title),
+        description:          normalizeLang(questFields.description),
         city:                 questFields.city ?? null,
         cover_gradient:       questFields.cover_gradient ?? null,
         attempts_before_hint: questFields.attempts_before_hint ?? 3,
@@ -97,10 +104,10 @@ async function importQuest(quest: ImportQuest): Promise<string> {
       location_name: c.location_name ?? null,
       lat:           c.lat ?? null,
       lng:           c.lng ?? null,
-      title:         c.title,
-      content:       c.content,
-      hint:          c.hint ?? null,
-      found_label:   c.found_label ?? null,
+      title:         normalizeLang(c.title),
+      content:       normalizeLang(c.content),
+      hint:          c.hint ? normalizeLang(c.hint) : null,
+      found_label:   c.found_label ? normalizeLang(c.found_label) : null,
       code:          c.code.trim().toUpperCase(),
     }))
   );
@@ -113,8 +120,8 @@ async function importQuest(quest: ImportQuest): Promise<string> {
 
 const SCHEMA_BLOCK = `{
   "slug": "my-quest-slug",
-  "title": { "ua": "", "en": "", "de": "" },
-  "description": { "ua": "", "en": "", "de": "" },
+  "title": { "uk": "", "en": "", "de": "" },
+  "description": { "uk": "", "en": "", "de": "" },
   "city": "Vienna",
   "cover_gradient": "linear-gradient(135deg, #1a0a2e, #6b1a1a)",
   "attempts_before_hint": 3,
@@ -124,10 +131,10 @@ const SCHEMA_BLOCK = `{
       "location_name": "Real place name",
       "lat": 48.2085,
       "lng": 16.3731,
-      "title":       { "ua": "", "en": "", "de": "" },
-      "content":     { "ua": "", "en": "", "de": "" },
-      "hint":        { "ua": "", "en": "", "de": "" },
-      "found_label": { "ua": "", "en": "", "de": "" },
+      "title":       { "uk": "", "en": "", "de": "" },
+      "content":     { "uk": "", "en": "", "de": "" },
+      "hint":        { "uk": "", "en": "", "de": "" },
+      "found_label": { "uk": "", "en": "", "de": "" },
       "code": "WORD"
     }
   ]
@@ -143,7 +150,7 @@ const DEFAULT_PROMPTS: Omit<AdminPrompt, 'updated_at'>[] = [
     template: `You are a writer for TrailTale — an outdoor city quest platform where players walk through real locations and solve riddles. Generate a complete quest as a JSON object.
 
 Rules:
-- All text fields trilingual: ua (Ukrainian), en (English), de (German)
+- All text fields trilingual: uk (Ukrainian), en (English), de (German)
 - "code" — single word players find at the location (inscription, name, year). ALL CAPS, max 12 chars.
 - "hint" — subtle nudge, one sentence, no spoilers
 - "found_label" — short noun phrase + emoji for what the player discovers
@@ -173,7 +180,7 @@ Output only the JSON, no extra text.`,
     template: `You are a writer for TrailTale — an outdoor city quest platform. Generate a complete quest JSON.
 
 Rules:
-- All text fields trilingual: ua, en, de
+- All text fields trilingual: uk, en, de
 - "code" — single word found at this location (inscription/name/year). ALL CAPS, max 12 chars.
 - "hint" — one subtle sentence
 - "content" — atmospheric 2nd-person riddle, 2–4 sentences
