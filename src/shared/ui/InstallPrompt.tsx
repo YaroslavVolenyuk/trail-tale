@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -8,6 +9,7 @@ interface BeforeInstallPromptEvent extends Event {
 const DISMISSED_KEY = 'pwa-install-dismissed';
 
 export function InstallPrompt() {
+  const { t } = useTranslation('common');
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
 
@@ -49,15 +51,15 @@ export function InstallPrompt() {
         <img src="/pwa-192x192.png" alt="" className="w-10 h-10 rounded-xl flex-shrink-0" />
 
         <div className="flex-1 min-w-0">
-          <p className="text-[14px] font-semibold text-white leading-tight">Add TrailTale</p>
-          <p className="text-[12px] text-text-muted leading-tight mt-0.5">Install for offline play</p>
+          <p className="text-[14px] font-semibold text-white leading-tight">{t('install.title')}</p>
+          <p className="text-[12px] text-text-muted leading-tight mt-0.5">{t('install.desc')}</p>
         </div>
 
         <button
           onClick={() => void handleInstall()}
           className="flex-shrink-0 h-8 px-3 rounded-lg bg-accent text-bg text-[13px] font-semibold"
         >
-          Add
+          {t('install.add')}
         </button>
         <button
           onClick={handleDismiss}

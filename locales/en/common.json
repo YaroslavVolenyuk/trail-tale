@@ -35,6 +35,12 @@
   "attempts": "Attempts",
   "leaderboard": "Leaderboard",
   "shareResult": "Share Result",
+  "shareText": "I completed a TrailTale quest in {{duration}}!",
+  "install": {
+    "title": "Add TrailTale",
+    "desc": "Install for offline play",
+    "add": "Add"
+  },
   "exploreMore": "Explore More Quests",
   "errors": {
     "tooShort": "Too short (min 2 characters)",

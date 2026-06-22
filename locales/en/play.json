@@ -18,5 +18,7 @@
   "attemptsRemaining": "{{count}} attempt(s) until hint",
   "hintUnlockedKeepTrying": "Hint unlocked — keep trying!",
   "finish": "Finish! 🎉",
-  "questNotFound": "Quest not found."
+  "questNotFound": "Quest not found.",
+  "backstory": "Backstory",
+  "start": "Let's go!"
 }

@@ -35,6 +35,12 @@
   "attempts": "Спроби",
   "leaderboard": "Рейтинг",
   "shareResult": "Поділитися результатом",
+  "shareText": "Я пройшов квест TrailTale за {{duration}}!",
+  "install": {
+    "title": "Додати TrailTale",
+    "desc": "Встановити для гри офлайн",
+    "add": "Додати"
+  },
   "exploreMore": "Більше квестів",
   "errors": {
     "tooShort": "Занадто коротко (мін. 2 символи)",

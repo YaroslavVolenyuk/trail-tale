@@ -35,6 +35,12 @@
   "attempts": "Versuche",
   "leaderboard": "Bestenliste",
   "shareResult": "Ergebnis teilen",
+  "shareText": "Ich habe einen TrailTale-Quest in {{duration}} abgeschlossen!",
+  "install": {
+    "title": "TrailTale hinzufügen",
+    "desc": "Für Offline-Spiel installieren",
+    "add": "Hinzufügen"
+  },
   "exploreMore": "Mehr Quests",
   "errors": {
     "tooShort": "Zu kurz (min. 2 Zeichen)",

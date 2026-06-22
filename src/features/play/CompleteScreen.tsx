@@ -45,7 +45,7 @@ export default function CompleteScreen() {
     const questSlug = sessionData?.quest_slug ?? '';
     const payload = {
       title: 'TrailTale',
-      text: `I completed a TrailTale quest in ${formatDuration(elapsedMs)}!`,
+      text: t('shareText', { duration: formatDuration(elapsedMs) }),
       url: `${window.location.origin}/q/${questSlug}`,
     };
     if (navigator.share) {

@@ -1,8 +1,10 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Screen, Button, BottomDock } from '@/shared/ui';
 import { useSession } from '@/shared/lib/queries';
+import i18n from '@/shared/i18n';
 import type { Lang } from '@/shared/lib/lang';
 
 function getLang(raw: string): Lang {
@@ -32,6 +34,7 @@ function QuestIcon() {
 }
 
 export default function IntroScreen() {
+  const { t } = useTranslation('play');
   const navigate = useNavigate();
   const { sessionId } = useParams<{ sessionId: string }>();
 
@@ -40,6 +43,11 @@ export default function IntroScreen() {
   const lang = getLang(sessionData?.lang ?? 'en');
   const questTitle = getLocalizedString(sessionData?.quest_title, lang);
   const introText  = getLocalizedString(sessionData?.quest_intro, lang);
+
+  // Sync i18next language with session language so UI strings match content language
+  useEffect(() => {
+    if (sessionData?.lang) void i18n.changeLanguage(sessionData.lang);
+  }, [sessionData?.lang]);
 
   // If no intro text — skip straight to play, but only after fresh data arrived
   useEffect(() => {
@@ -88,7 +96,7 @@ export default function IntroScreen() {
           )}
 
           <h1 className="text-[28px] font-bold text-white leading-snug tracking-[-0.3px] mb-6">
-            Передісторія
+            {t('backstory')}
           </h1>
         </motion.div>
 
@@ -111,7 +119,7 @@ export default function IntroScreen() {
 
       <BottomDock>
         <Button onClick={handleStart}>
-          Починаємо!
+          {t('start')}
         </Button>
       </BottomDock>
     </Screen>

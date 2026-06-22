@@ -18,5 +18,7 @@
   "attemptsRemaining": "Noch {{count}} Versuch(e) bis zum Tipp",
   "hintUnlockedKeepTrying": "Tipp freigeschaltet — weiter versuchen!",
   "finish": "Ziel! 🎉",
-  "questNotFound": "Quest nicht gefunden."
+  "questNotFound": "Quest nicht gefunden.",
+  "backstory": "Vorgeschichte",
+  "start": "Los geht's!"
 }

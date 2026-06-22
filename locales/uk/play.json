@@ -18,5 +18,7 @@
   "attemptsRemaining": "Спроб до підказки: {{count}}",
   "hintUnlockedKeepTrying": "Підказку розблоковано — продовжуй!",
   "finish": "Фінал! 🎉",
-  "questNotFound": "Квест не знайдено."
+  "questNotFound": "Квест не знайдено.",
+  "backstory": "Передісторія",
+  "start": "Починаємо!"
 }
