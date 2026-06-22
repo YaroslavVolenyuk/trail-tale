@@ -42,6 +42,7 @@
     "add": "Add"
   },
   "exploreMore": "Explore More Quests",
+  "backToQuests": "Back to quests",
   "errors": {
     "tooShort": "Too short (min 2 characters)",
     "tooLong": "Too long (max 20 characters)"

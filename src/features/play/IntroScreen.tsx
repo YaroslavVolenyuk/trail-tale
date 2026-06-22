@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { Screen, Button, BottomDock } from '@/shared/ui';
+import { Screen, Button, BottomDock, TopBar } from '@/shared/ui';
 import { useSession } from '@/shared/lib/queries';
 import i18n from '@/shared/i18n';
 import type { Lang } from '@/shared/lib/lang';
@@ -75,10 +75,7 @@ export default function IntroScreen() {
 
   return (
     <Screen>
-      {/* Top bar */}
-      <div className="flex-shrink-0 text-center py-3.5 px-5">
-        <span className="text-[17px] font-semibold text-white">TrailTale</span>
-      </div>
+      <TopBar title="TrailTale" onBack={() => navigate(-1)} backLabel={t('back', { ns: 'common', defaultValue: 'Go back' })} />
 
       <div className="flex-1 overflow-y-auto">
         <motion.div

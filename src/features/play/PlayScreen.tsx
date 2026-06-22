@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Screen, ProgressBar, Button, BottomDock } from '@/shared/ui';
+import { Screen, ProgressBar, Button, BottomDock, TopBar } from '@/shared/ui';
 import { TextInput } from '@/shared/ui';
 import { useSession, useCheckClueCode } from '@/shared/lib/queries';
 import type { Lang } from '@/shared/lib/lang';
@@ -197,6 +197,23 @@ function CorrectOverlay({
   );
 }
 
+// ── LeaveDialog ────────────────────────────────────────────────────────────
+function LeaveDialog({ onConfirm, onCancel }: { onConfirm: () => void; onCancel: () => void }) {
+  const { t } = useTranslation('play');
+  return (
+    <div className="fixed inset-0 z-50 flex items-end">
+      <div className="absolute inset-0 bg-black/60" onClick={onCancel} />
+      <div className="relative w-full bg-surface rounded-t-2xl px-6 pt-6 pb-[max(env(safe-area-inset-bottom),32px)]">
+        <div className="w-10 h-1 bg-border rounded-full mx-auto mb-6" />
+        <h2 className="text-[22px] font-bold text-white mb-1">{t('leaveTitle')}</h2>
+        <p className="text-sm text-text-muted mb-6">{t('leaveBody')}</p>
+        <Button className="mb-3" onClick={onConfirm}>{t('leaveConfirm')}</Button>
+        <Button variant="secondary" onClick={onCancel}>{t('leaveCancel')}</Button>
+      </div>
+    </div>
+  );
+}
+
 // ── Skeleton ───────────────────────────────────────────────────────────────
 function PlaySkeleton() {
   return (
@@ -239,6 +256,7 @@ export default function PlayScreen() {
 
   const [code, setCode] = useState('');
   const [submitState, setSubmitState] = useState<SubmitState>('idle');
+  const [leaveOpen, setLeaveOpen] = useState(false);
   const [userHintVisible, setUserHintVisible] = useState<boolean | null>(null);
   const hintVisible = userHintVisible ?? (sessionData?.hint_available ?? false);
   const [countdown, setCountdown] = useState(0);
@@ -385,6 +403,15 @@ export default function PlayScreen() {
           <span className="text-[15px] font-semibold text-accent tracking-tight flex-shrink-0">
             {current_clue + 1} / {total_clues}
           </span>
+          <button
+            onClick={() => setLeaveOpen(true)}
+            className="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-lg text-white/40 hover:text-white/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
+            aria-label={t('home')}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M1 7L8 1L15 7V14.5C15 14.776 14.776 15 14.5 15H10.5V11H5.5V15H1.5C1.224 15 1 14.776 1 14.5V7Z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
         </div>
 
         <ProgressBar value={(current_clue + 1) / total_clues} />
@@ -490,6 +517,13 @@ export default function PlayScreen() {
         }}
         onClose={() => setQrOpen(false)}
       />
+
+      {leaveOpen && (
+        <LeaveDialog
+          onConfirm={() => navigate('/')}
+          onCancel={() => setLeaveOpen(false)}
+        />
+      )}
 
       <AnimatePresence>
         {submitState === 'correct' && (

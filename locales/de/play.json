@@ -20,5 +20,10 @@
   "finish": "Ziel! 🎉",
   "questNotFound": "Quest nicht gefunden.",
   "backstory": "Vorgeschichte",
-  "start": "Los geht's!"
+  "start": "Los geht's!",
+  "home": "Startseite",
+  "leaveTitle": "Quest verlassen?",
+  "leaveBody": "Dein Fortschritt ist gespeichert. Verwende deinen Wiederherstellungscode, um später weiterzumachen.",
+  "leaveConfirm": "Verlassen",
+  "leaveCancel": "Weiterspielen"
 }

@@ -20,5 +20,10 @@
   "finish": "Finish! 🎉",
   "questNotFound": "Quest not found.",
   "backstory": "Backstory",
-  "start": "Let's go!"
+  "start": "Let's go!",
+  "home": "Home",
+  "leaveTitle": "Leave Quest?",
+  "leaveBody": "Your progress is saved. Use your recovery code to continue later.",
+  "leaveConfirm": "Leave",
+  "leaveCancel": "Keep Playing"
 }

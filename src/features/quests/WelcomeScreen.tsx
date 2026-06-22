@@ -127,6 +127,19 @@ export default function WelcomeScreen() {
   return (
     <>
       <Screen>
+        {/* Back to quest list */}
+        <div className="flex-shrink-0 px-2 pt-[max(env(safe-area-inset-top),10px)]">
+          <button
+            onClick={() => navigate('/')}
+            className="w-11 h-11 grid place-items-center text-white/60 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-lg"
+            aria-label={t('backToQuests')}
+          >
+            <svg width="10" height="18" viewBox="0 0 10 18" fill="none" aria-hidden="true">
+              <path d="M9 1L1 9L9 17" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        </div>
+
         <div className="flex-1 flex flex-col items-center justify-center px-10 pb-6">
           <Logo size={72} />
           <h1 className="text-[32px] font-bold text-white mt-[18px] tracking-[-0.6px] text-center">
