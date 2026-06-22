@@ -897,12 +897,15 @@ export function useUpdateSessionLang() {
       lang: Lang;
       deviceId: string;
     }) => {
-      const { error } = await supabase.rpc('update_session_lang', {
+      const { data, error } = await supabase.rpc('update_session_lang', {
         p_session_id: sessionId,
         p_lang:       lang,
         p_device_id:  deviceId,
       });
       if (error) throw error;
+      // RPC now returns { ok: true } or { error: ... } instead of failing silently.
+      const result = data as { ok?: boolean; error?: string } | null;
+      if (result?.error) throw new Error(result.error);
     },
     onSuccess: (_data, { sessionId }) => {
       void queryClient.invalidateQueries({ queryKey: ['session', sessionId] });
