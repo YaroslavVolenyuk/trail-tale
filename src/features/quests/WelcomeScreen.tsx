@@ -1,9 +1,41 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Screen, Logo, Button, BottomDock, TextInput } from '@/shared/ui';
+import { motion } from 'framer-motion';
+import { Screen, Button, BottomDock, TextInput } from '@/shared/ui';
 import { getDeviceId } from '@/shared/lib/deviceId';
-import { useResumeByRecoveryCode } from '@/shared/lib/queries';
+import { useResumeByRecoveryCode, useQuestBySlug } from '@/shared/lib/queries';
+import type { Lang } from '@/shared/lib/lang';
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+const VALID_LANGS: Lang[] = ['uk', 'en', 'de'];
+
+function getPreferredLang(): Lang {
+  const stored = localStorage.getItem('tt:lang');
+  if (stored && VALID_LANGS.includes(stored as Lang)) return stored as Lang;
+  const browser = navigator.language.slice(0, 2);
+  if (VALID_LANGS.includes(browser as Lang)) return browser as Lang;
+  return 'en';
+}
+
+function getLocalizedString(obj: Record<string, string> | null | undefined, lang: Lang): string {
+  if (!obj) return '';
+  return obj[lang] || obj['en'] || Object.values(obj).find((v) => v) || '';
+}
+
+// Decorative compass / map pin icon (same as IntroScreen)
+function QuestIcon() {
+  return (
+    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" aria-hidden="true">
+      <circle cx="28" cy="28" r="26" stroke="#F5A623" strokeWidth="2" opacity="0.3" />
+      <circle cx="28" cy="28" r="18" stroke="#F5A623" strokeWidth="2" opacity="0.6" />
+      <path d="M28 14v6M28 36v6M14 28h6M36 28h6" stroke="#F5A623" strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="28" cy="28" r="3.5" fill="#F5A623" />
+      <path d="M28 21l2.5 6.5H21.5L28 21z" fill="#F5A623" opacity="0.8" />
+    </svg>
+  );
+}
 
 // ── TeamCodeSheet ─────────────────────────────────────────────────────────────
 
@@ -63,7 +95,6 @@ function RecoverySheet({ onClose }: { onClose: () => void }) {
   const [code, setCode] = useState('');
   const [err, setErr] = useState('');
 
-  // Format as AAA-BBB (3 alphanum + dash + 3 alphanum)
   const formatCode = (raw: string) => {
     const v = raw.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
     return v.length > 3 ? `${v.slice(0, 3)}-${v.slice(3)}` : v;
@@ -124,6 +155,12 @@ export default function WelcomeScreen() {
   const [showTeamSheet, setShowTeamSheet]         = useState(false);
   const [showRecoverySheet, setShowRecoverySheet] = useState(false);
 
+  const lang = getPreferredLang();
+  const { data: quest, isLoading } = useQuestBySlug(slug);
+
+  const questTitle = getLocalizedString(quest?.title, lang);
+  const introText  = getLocalizedString(quest?.intro, lang);
+
   return (
     <>
       <Screen>
@@ -140,20 +177,55 @@ export default function WelcomeScreen() {
           </button>
         </div>
 
-        <div className="flex-1 flex flex-col items-center justify-center px-10 pb-6">
-          <Logo size={72} />
-          <h1 className="text-[32px] font-bold text-white mt-[18px] tracking-[-0.6px] text-center">
-            TrailTale
-          </h1>
-          <p className="text-base text-text-muted mt-2.5 text-center leading-relaxed">
-            {t('tagline')}
-          </p>
+        <div className="flex-1 overflow-y-auto">
+          {isLoading ? (
+            <div className="flex-1 flex items-center justify-center h-full">
+              <div className="w-6 h-6 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+            </div>
+          ) : (
+            <>
+              <motion.div
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.45, ease: 'easeOut' }}
+                className="flex flex-col items-center px-6 pt-8 pb-4 text-center"
+              >
+                <QuestIcon />
+
+                {questTitle && (
+                  <p className="text-[12px] font-semibold text-accent tracking-[0.14em] uppercase mt-5 mb-2">
+                    {questTitle}
+                  </p>
+                )}
+
+                <h1 className="text-[28px] font-bold text-white leading-snug tracking-[-0.3px] mb-6">
+                  {t('backstory', { ns: 'play', defaultValue: 'Backstory' })}
+                </h1>
+              </motion.div>
+
+              {introText && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                  className="mx-4 bg-surface rounded-card p-5 mb-4"
+                >
+                  <svg width="24" height="18" viewBox="0 0 24 18" fill="none" className="mb-3 opacity-40" aria-hidden="true">
+                    <path d="M0 18V10.8C0 4.8 3.6 1.2 10.8 0l1.2 1.8C8.4 2.7 6.6 4.8 6 8.4H10.8V18H0zm13.2 0V10.8C13.2 4.8 16.8 1.2 24 0l1.2 1.8C21.6 2.7 19.8 4.8 19.2 8.4H24V18H13.2z" fill="#F5A623" />
+                  </svg>
+                  <p className="text-[16px] text-text-body leading-relaxed tracking-[-0.1px] whitespace-pre-wrap">
+                    {introText}
+                  </p>
+                </motion.div>
+              )}
+            </>
+          )}
         </div>
 
-        <div className="flex-1" aria-hidden="true" />
-
         <BottomDock border={false} className="pb-11">
-          <Button onClick={() => navigate(`/q/${slug}/setup`)}>{t('getStarted')}</Button>
+          <Button onClick={() => navigate(`/q/${slug}/setup`)}>
+            {t('start', { ns: 'play', defaultValue: "Let's go!" })}
+          </Button>
           <div className="text-center mt-[18px] py-1.5 flex items-center justify-center gap-4">
             <button
               className="min-h-[44px] px-2 text-sm text-text-muted focus-visible:outline-none focus-visible:underline"

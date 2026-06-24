@@ -125,7 +125,7 @@ export default function NicknameScreen() {
         deviceId,
         lang,
       });
-      navigate(`/play/${session_id}/intro`);
+      navigate(`/play/${session_id}`);
     } else {
       const result = await startSession.mutateAsync({
         questSlug: slug,
@@ -142,7 +142,7 @@ export default function NicknameScreen() {
           recoveryCode: result.recovery_code,
         });
       } else {
-        navigate(`/play/${result.session_id}/intro`);
+        navigate(`/play/${result.session_id}`);
       }
     }
   };
@@ -215,7 +215,7 @@ export default function NicknameScreen() {
         <RecoveryCodeModal
           code={pendingSession.recoveryCode}
           onDone={() => {
-            navigate(`/play/${pendingSession.sessionId}/intro`);
+            navigate(`/play/${pendingSession.sessionId}`);
           }}
         />
       )}

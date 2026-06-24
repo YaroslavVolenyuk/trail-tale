@@ -802,6 +802,36 @@ export function useDeletePlayer() {
   });
 }
 
+// ── useQuestBySlug ────────────────────────────────────────────────────────────
+
+export interface QuestPreview {
+  id: string;
+  slug: string;
+  title: Record<string, string>;
+  intro: Record<string, string> | null;
+}
+
+export function useQuestBySlug(slug: string) {
+  return useQuery({
+    queryKey: ['quest', 'preview', slug],
+    queryFn: async (): Promise<QuestPreview | null> => {
+      const { data, error } = await supabase
+        .from('quests')
+        .select('id, slug, title, intro')
+        .eq('slug', slug)
+        .single();
+      if (error) return null;
+      return {
+        ...data,
+        title: data.title as Record<string, string>,
+        intro: (data.intro ?? null) as Record<string, string> | null,
+      };
+    },
+    enabled: !!slug,
+    staleTime: 60_000,
+  });
+}
+
 // ── usePublishedQuests ────────────────────────────────────────────────────────
 
 export interface PublishedQuest {
