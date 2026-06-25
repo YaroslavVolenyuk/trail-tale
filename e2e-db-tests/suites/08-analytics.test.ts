@@ -85,16 +85,18 @@ describeIfAdmin('08 — analytics aggregates', () => {
 
   it('seeds 5 sessions across two quests (+ 1 is_test outlier)', async () => {
     // questA: 2 finished (durations 60s, 120s), 1 unfinished
-    ours.push(await makeSession(questA, { finish: true,  durationMs: 60_000,  nick: 'a1' }));
-    ours.push(await makeSession(questA, { finish: true,  durationMs: 120_000, nick: 'a2' }));
+    ours.push(await makeSession(questA, { finish: true, durationMs: 60_000, nick: 'a1' }));
+    ours.push(await makeSession(questA, { finish: true, durationMs: 120_000, nick: 'a2' }));
     ours.push(await makeSession(questA, { finish: false, nick: 'a3' }));
 
     // questB: 1 finished (duration 30s), 1 unfinished
-    ours.push(await makeSession(questB, { finish: true,  durationMs: 30_000, nick: 'b1' }));
+    ours.push(await makeSession(questB, { finish: true, durationMs: 30_000, nick: 'b1' }));
     ours.push(await makeSession(questB, { finish: false, nick: 'b2' }));
 
     // is_test outlier — must be excluded from counters
-    ours.push(await makeSession(questA, { finish: true, durationMs: 999_000, isTest: true, nick: 't1' }));
+    ours.push(
+      await makeSession(questA, { finish: true, durationMs: 999_000, isTest: true, nick: 't1' }),
+    );
 
     expect(ours).toHaveLength(6);
   });
@@ -118,9 +120,7 @@ describeIfAdmin('08 — analytics aggregates', () => {
   });
 
   it('avg_duration computed only over finished sessions', async () => {
-    const finished = (await fetchOurSessions()).filter(
-      (r) => !r.is_test && r.finished_at !== null,
-    );
+    const finished = (await fetchOurSessions()).filter((r) => !r.is_test && r.finished_at !== null);
     const durations = finished.map(
       (r) => new Date(r.finished_at!).getTime() - new Date(r.started_at).getTime(),
     );

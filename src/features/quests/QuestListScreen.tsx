@@ -38,11 +38,11 @@ function QuestCard({
   return (
     <button
       onClick={onClick}
-      className="w-full text-left rounded-[20px] bg-surface px-4 py-4 flex items-start gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 active:scale-[0.98] transition-transform"
+      className="flex w-full items-start gap-4 rounded-[20px] bg-surface px-4 py-4 text-left transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 active:scale-[0.98]"
     >
       {/* Icon badge */}
       <div
-        className="flex-shrink-0 w-12 h-12 rounded-[14px] flex items-center justify-center mt-0.5"
+        className="mt-0.5 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[14px]"
         style={{ background: quest.cover_gradient ?? badgeBg }}
         aria-hidden="true"
       >
@@ -58,17 +58,15 @@ function QuestCard({
       </div>
 
       {/* Text */}
-      <div className="flex-1 min-w-0">
+      <div className="min-w-0 flex-1">
         {quest.city && (
-          <p className="text-[11px] font-semibold text-accent tracking-[0.12em] uppercase mb-0.5">
+          <p className="mb-0.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-accent">
             {quest.city}
           </p>
         )}
-        <h2 className="text-[17px] font-bold text-white leading-snug tracking-tight">
-          {title}
-        </h2>
+        <h2 className="text-[17px] font-bold leading-snug tracking-tight text-white">{title}</h2>
         {description && (
-          <p className="text-[13px] text-text-muted mt-1 leading-relaxed line-clamp-2">
+          <p className="mt-1 line-clamp-2 text-[13px] leading-relaxed text-text-muted">
             {description}
           </p>
         )}
@@ -76,11 +74,20 @@ function QuestCard({
 
       {/* Chevron */}
       <svg
-        className="flex-shrink-0 mt-1 text-text-muted"
-        width="8" height="14" viewBox="0 0 8 14" fill="none"
+        className="mt-1 flex-shrink-0 text-text-muted"
+        width="8"
+        height="14"
+        viewBox="0 0 8 14"
+        fill="none"
         aria-hidden="true"
       >
-        <path d="M1 1L7 7L1 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path
+          d="M1 1L7 7L1 13"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
     </button>
   );
@@ -88,12 +95,12 @@ function QuestCard({
 
 function QuestCardSkeleton() {
   return (
-    <div className="w-full rounded-[20px] bg-surface px-4 py-4 flex items-start gap-4">
-      <div className="flex-shrink-0 w-12 h-12 rounded-[14px] bg-surface-raised animate-pulse" />
+    <div className="flex w-full items-start gap-4 rounded-[20px] bg-surface px-4 py-4">
+      <div className="h-12 w-12 flex-shrink-0 animate-pulse rounded-[14px] bg-surface-raised" />
       <div className="flex-1 space-y-2 pt-1">
-        <div className="h-2.5 w-14 bg-surface-raised rounded animate-pulse" />
-        <div className="h-4 w-1/2 bg-surface-raised rounded animate-pulse" />
-        <div className="h-3 w-full bg-surface-raised rounded animate-pulse" />
+        <div className="h-2.5 w-14 animate-pulse rounded bg-surface-raised" />
+        <div className="h-4 w-1/2 animate-pulse rounded bg-surface-raised" />
+        <div className="h-3 w-full animate-pulse rounded bg-surface-raised" />
       </div>
     </div>
   );
@@ -113,16 +120,14 @@ export default function QuestListScreen() {
   return (
     <Screen>
       {/* Header */}
-      <div className="flex-shrink-0 px-5 pt-[max(env(safe-area-inset-top),20px)] pb-5">
+      <div className="flex-shrink-0 px-5 pb-5 pt-[max(env(safe-area-inset-top),20px)]">
         <div className="flex items-center gap-3">
           <Logo size={32} />
-          <span className="text-[20px] font-bold text-white tracking-tight">TrailTale</span>
+          <span className="text-[20px] font-bold tracking-tight text-white">TrailTale</span>
         </div>
-        <h1 className="text-[28px] font-bold text-white mt-5 tracking-tight">
-          {t('chooseQuest')}
-        </h1>
-        <p className="text-[14px] text-text-muted mt-1">{t('chooseQuestSub')}</p>
-        <div role="radiogroup" aria-label={t('chooseLanguage')} className="flex gap-2 mt-4">
+        <h1 className="mt-5 text-[28px] font-bold tracking-tight text-white">{t('chooseQuest')}</h1>
+        <p className="mt-1 text-[14px] text-text-muted">{t('chooseQuestSub')}</p>
+        <div role="radiogroup" aria-label={t('chooseLanguage')} className="mt-4 flex gap-2">
           {LANGS.map((l) => (
             <Pill
               key={l.code}
@@ -144,13 +149,13 @@ export default function QuestListScreen() {
         )}
 
         {error && (
-          <div className="flex-1 flex items-center justify-center text-text-muted text-center px-6 mt-16">
+          <div className="mt-16 flex flex-1 items-center justify-center px-6 text-center text-text-muted">
             {t('loadError')}
           </div>
         )}
 
         {!isLoading && !error && quests?.length === 0 && (
-          <div className="flex items-center justify-center text-text-muted text-center px-6 mt-16">
+          <div className="mt-16 flex items-center justify-center px-6 text-center text-text-muted">
             {t('noQuests')}
           </div>
         )}

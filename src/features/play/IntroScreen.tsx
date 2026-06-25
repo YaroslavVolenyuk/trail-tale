@@ -25,7 +25,12 @@ function QuestIcon() {
       <circle cx="28" cy="28" r="26" stroke="#F5A623" strokeWidth="2" opacity="0.3" />
       <circle cx="28" cy="28" r="18" stroke="#F5A623" strokeWidth="2" opacity="0.6" />
       {/* Compass needles */}
-      <path d="M28 14v6M28 36v6M14 28h6M36 28h6" stroke="#F5A623" strokeWidth="1.5" strokeLinecap="round" />
+      <path
+        d="M28 14v6M28 36v6M14 28h6M36 28h6"
+        stroke="#F5A623"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
       {/* Center dot */}
       <circle cx="28" cy="28" r="3.5" fill="#F5A623" />
       <path d="M28 21l2.5 6.5H21.5L28 21z" fill="#F5A623" opacity="0.8" />
@@ -42,7 +47,7 @@ export default function IntroScreen() {
 
   const lang = getLang(sessionData?.lang ?? 'en');
   const questTitle = getLocalizedString(sessionData?.quest_title, lang);
-  const introText  = getLocalizedString(sessionData?.quest_intro, lang);
+  const introText = getLocalizedString(sessionData?.quest_intro, lang);
 
   // Sync i18next language with session language so UI strings match content language
   useEffect(() => {
@@ -63,8 +68,8 @@ export default function IntroScreen() {
   if (isLoading || isFetching || !sessionData) {
     return (
       <Screen>
-        <div className="flex-1 flex items-center justify-center">
-          <div className="w-6 h-6 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+        <div className="flex flex-1 items-center justify-center">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-accent border-t-transparent" />
         </div>
       </Screen>
     );
@@ -75,24 +80,28 @@ export default function IntroScreen() {
 
   return (
     <Screen>
-      <TopBar title="TrailTale" onBack={() => navigate(-1)} backLabel={t('back', { ns: 'common', defaultValue: 'Go back' })} />
+      <TopBar
+        title="TrailTale"
+        onBack={() => navigate(-1)}
+        backLabel={t('back', { ns: 'common', defaultValue: 'Go back' })}
+      />
 
       <div className="flex-1 overflow-y-auto">
         <motion.div
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, ease: 'easeOut' }}
-          className="flex flex-col items-center px-6 pt-8 pb-4 text-center"
+          className="flex flex-col items-center px-6 pb-4 pt-8 text-center"
         >
           <QuestIcon />
 
           {questTitle && (
-            <p className="text-[12px] font-semibold text-accent tracking-[0.14em] uppercase mt-5 mb-2">
+            <p className="mb-2 mt-5 text-[12px] font-semibold uppercase tracking-[0.14em] text-accent">
               {questTitle}
             </p>
           )}
 
-          <h1 className="text-[28px] font-bold text-white leading-snug tracking-[-0.3px] mb-6">
+          <h1 className="mb-6 text-[28px] font-bold leading-snug tracking-[-0.3px] text-white">
             {t('backstory')}
           </h1>
         </motion.div>
@@ -101,23 +110,31 @@ export default function IntroScreen() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="mx-4 bg-surface rounded-card p-5"
+          className="mx-4 rounded-card bg-surface p-5"
         >
           {/* Decorative quote mark */}
-          <svg width="24" height="18" viewBox="0 0 24 18" fill="none" className="mb-3 opacity-40" aria-hidden="true">
-            <path d="M0 18V10.8C0 4.8 3.6 1.2 10.8 0l1.2 1.8C8.4 2.7 6.6 4.8 6 8.4H10.8V18H0zm13.2 0V10.8C13.2 4.8 16.8 1.2 24 0l1.2 1.8C21.6 2.7 19.8 4.8 19.2 8.4H24V18H13.2z" fill="#F5A623" />
+          <svg
+            width="24"
+            height="18"
+            viewBox="0 0 24 18"
+            fill="none"
+            className="mb-3 opacity-40"
+            aria-hidden="true"
+          >
+            <path
+              d="M0 18V10.8C0 4.8 3.6 1.2 10.8 0l1.2 1.8C8.4 2.7 6.6 4.8 6 8.4H10.8V18H0zm13.2 0V10.8C13.2 4.8 16.8 1.2 24 0l1.2 1.8C21.6 2.7 19.8 4.8 19.2 8.4H24V18H13.2z"
+              fill="#F5A623"
+            />
           </svg>
 
-          <p className="text-[16px] text-text-body leading-relaxed tracking-[-0.1px] whitespace-pre-wrap">
+          <p className="whitespace-pre-wrap text-[16px] leading-relaxed tracking-[-0.1px] text-text-body">
             {introText}
           </p>
         </motion.div>
       </div>
 
       <BottomDock>
-        <Button onClick={handleStart}>
-          {t('start')}
-        </Button>
+        <Button onClick={handleStart}>{t('start')}</Button>
       </BottomDock>
     </Screen>
   );

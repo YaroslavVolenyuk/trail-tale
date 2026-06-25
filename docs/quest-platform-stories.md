@@ -3,6 +3,7 @@
 Декомпозиция эпика из `quest-platform-plan.md` на реализуемые истории с примерами best practices. Сгруппировано в под-эпики; внутри — порядок, в котором имеет смысл делать.
 
 Условные обозначения:
+
 - **AC** — Acceptance Criteria
 - **DoD** — Definition of Done
 - **BP** — Best practice / пример кода
@@ -12,15 +13,18 @@
 ## Эпик 0 — Foundation
 
 ### Story 0.1 — Vite + React + Tailwind + Router скелет
+
 **Как** разработчик, **я хочу** базовый скелет приложения с роутингом, **чтобы** иметь точку входа для всех следующих историй.
 
 **AC**
+
 - `pnpm dev` поднимает приложение
 - Маршруты: `/`, `/q/:questId`, `/play/:sessionId`, `/admin`
 - Tailwind работает (тестовая страница с классами)
 - ESLint + Prettier + TypeScript strict mode
 
 **BP — структура папок (feature-based, не technical)**
+
 ```
 src/
   features/
@@ -36,32 +40,37 @@ src/
   routes.tsx
   main.tsx
 ```
+
 Feature-based группировка масштабируется лучше, чем `components/`, `pages/`, `hooks/` — связанный код лежит рядом.
 
 **BP — tsconfig**
+
 ```jsonc
 {
   "compilerOptions": {
     "strict": true,
-    "noUncheckedIndexedAccess": true,  // ловит .find()→undefined
+    "noUncheckedIndexedAccess": true, // ловит .find()→undefined
     "exactOptionalPropertyTypes": true,
-    "paths": { "@/*": ["./src/*"] }
-  }
+    "paths": { "@/*": ["./src/*"] },
+  },
 }
 ```
 
 ---
 
 ### Story 0.2 — Supabase проект + миграции через CLI
+
 **Как** разработчик, **я хочу** управлять схемой через миграции в git, **чтобы** изменения были воспроизводимы и ревьюабельны.
 
 **AC**
+
 - `supabase/migrations/` в репо
 - `supabase db reset` поднимает локальную БД с нуля
 - `.env.local` для ключей, `.env.example` в репо
 - GitHub Action прогоняет миграции на staging
 
 **BP — никогда не править схему через дашборд**. Только миграции:
+
 ```bash
 supabase migration new create_quests_table
 # редактируем сгенерированный .sql
@@ -69,6 +78,7 @@ supabase db push  # на удалённую
 ```
 
 **BP — env vars**
+
 ```ts
 // shared/lib/env.ts — единая точка чтения env, с валидацией
 import { z } from 'zod';
@@ -80,29 +90,35 @@ const schema = z.object({
 
 export const env = schema.parse(import.meta.env);
 ```
+
 Падение при старте лучше тихих `undefined` в рантайме.
 
 ---
 
 ### Story 0.3 — i18n каркас (react-i18next)
+
 **Как** игрок, **я хочу** видеть UI на своём языке, **чтобы** не упираться в незнакомые слова.
 
 **AC**
+
 - 3 локали: `ru`, `en`, `de`
 - Автодетект из `navigator.language`
 - Ручной переключатель на стартовом экране
 - Выбранный язык в `localStorage` и в `sessions.lang`
 
 **BP — namespaces по фичам**
+
 ```
 locales/
   ru/common.json
   ru/play.json
   ru/admin.json
 ```
+
 Грузим только нужное на странице через `useTranslation('play')`.
 
 **BP — типобезопасность ключей**
+
 ```ts
 // i18next.d.ts
 import 'i18next';
@@ -116,6 +132,7 @@ declare module 'i18next' {
   }
 }
 ```
+
 Теперь `t('foo.bar')` падает на этапе компиляции, если ключа нет.
 
 **BP — никаких склеек строк**. Только интерполяция: `t('attemptsLeft', { count: 3 })` + плюрализация в JSON.
@@ -123,35 +140,41 @@ declare module 'i18next' {
 ---
 
 ### Story 0.4 — PWA с vite-plugin-pwa
+
 **Как** игрок без стабильного интернета, **я хочу**, чтобы приложение работало после первой загрузки, **чтобы** не терять прогресс в подземном переходе.
 
 **AC**
+
 - `manifest.webmanifest` с иконками и `display: standalone`
 - Service worker кеширует ассеты (precache)
 - Загадки кешируются runtime (network-first → cache fallback)
 - Промпт "обновить" при новой версии
 
 **BP — стратегии Workbox**
+
 ```ts
 // vite.config.ts
 VitePWA({
   registerType: 'prompt',
   workbox: {
     runtimeCaching: [
-      { // картинки загадок
+      {
+        // картинки загадок
         urlPattern: /\/storage\/v1\/object\/public\/.*\.(png|jpg|webp)$/,
         handler: 'CacheFirst',
-        options: { cacheName: 'media', expiration: { maxAgeSeconds: 60*60*24*30 } }
+        options: { cacheName: 'media', expiration: { maxAgeSeconds: 60 * 60 * 24 * 30 } },
       },
-      { // данные квеста — сетка, фолбэк кеш
+      {
+        // данные квеста — сетка, фолбэк кеш
         urlPattern: /\/rest\/v1\/clues/,
         handler: 'NetworkFirst',
-        options: { cacheName: 'clues', networkTimeoutSeconds: 3 }
-      }
-    ]
-  }
-})
+        options: { cacheName: 'clues', networkTimeoutSeconds: 3 },
+      },
+    ],
+  },
+});
 ```
+
 Код всегда `NetworkOnly` — проверка ответа требует онлайна.
 
 ---
@@ -159,9 +182,11 @@ VitePWA({
 ## Эпик 1 — Data Layer
 
 ### Story 1.1 — Схема БД и RLS политики
+
 **Как** владелец продукта, **я хочу** чтобы анонимы не могли прочитать правильные коды загадок, **чтобы** квест нельзя было пройти через DevTools.
 
 **AC**
+
 - Миграция создаёт все таблицы из плана
 - RLS включён на всех таблицах
 - Анон-роль может читать `quests.is_published = true` и `clues` БЕЗ полей `code`/`hint`
@@ -171,6 +196,7 @@ VitePWA({
 **BP — критично: код НИКОГДА не уходит на клиент**
 
 Делаем view без секретов:
+
 ```sql
 create view public.clues_public as
 select id, quest_id, "order", content, location_name, lat, lng, media_url
@@ -182,6 +208,7 @@ revoke all on public.clues from anon;
 ```
 
 **BP — RLS на sessions через device_id**
+
 ```sql
 alter table sessions enable row level security;
 
@@ -189,9 +216,11 @@ alter table sessions enable row level security;
 create policy "own session read" on sessions
   for select using (device_id = current_setting('request.headers')::json->>'x-device-id');
 ```
+
 Альтернатива проще: вся запись/чтение `sessions` через SECURITY DEFINER RPC-функции (см. 1.2).
 
 **BP — jsonb с языками: проверка ключей**
+
 ```sql
 alter table quests add constraint title_has_ru
   check (title ? 'ru' or title ? 'en' or title ? 'de');
@@ -200,9 +229,11 @@ alter table quests add constraint title_has_ru
 ---
 
 ### Story 1.2 — RPC `check_clue_code` (валидация на сервере)
+
 **Как** разработчик, **я хочу** одну SECURITY DEFINER функцию для проверки кода, **чтобы** правильный ответ никогда не покидал БД.
 
 **AC**
+
 - Функция принимает `session_id`, `code_entered`
 - Возвращает `{ correct: bool, attempts_left: int, hint?: text, next_clue?: jsonb }`
 - Пишет в `attempt_log`
@@ -210,6 +241,7 @@ alter table quests add constraint title_has_ru
 - Применяет rate limit (см. 2.7)
 
 **BP — пример**
+
 ```sql
 create or replace function public.check_clue_code(
   p_session_id uuid,
@@ -256,43 +288,43 @@ end $$;
 revoke all on function check_clue_code from public;
 grant execute on function check_clue_code to anon;
 ```
+
 Один транзакционный путь: rate-check, лог, инкремент. Нет TOCTOU между чтением и записью.
 
 ---
 
 ### Story 1.3 — Type-safe Supabase клиент
+
 **Как** разработчик, **я хочу** автогенерируемые типы из схемы, **чтобы** опечатки в названиях колонок ловились в IDE.
 
 **AC**
+
 - `supabase gen types typescript --linked > src/shared/lib/database.types.ts`
 - npm script `db:types` в `package.json`
 - Pre-commit hook (lint-staged) валидирует свежесть типов в CI
 
 **BP**
+
 ```ts
 // shared/lib/supabase.ts
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './database.types';
 import { env } from './env';
 
-export const supabase = createClient<Database>(
-  env.VITE_SUPABASE_URL,
-  env.VITE_SUPABASE_ANON_KEY,
-  {
-    auth: { persistSession: false }, // у нас анон-флоу
-    global: { headers: { 'x-device-id': getDeviceId() } }
-  }
-);
+export const supabase = createClient<Database>(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_ANON_KEY, {
+  auth: { persistSession: false }, // у нас анон-флоу
+  global: { headers: { 'x-device-id': getDeviceId() } },
+});
 ```
 
 **BP — TanStack Query поверх Supabase**, не голые `useEffect`:
+
 ```ts
 export function useQuest(slug: string) {
   return useQuery({
     queryKey: ['quest', slug],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('quests').select('*').eq('slug', slug).single();
+      const { data, error } = await supabase.from('quests').select('*').eq('slug', slug).single();
       if (error) throw error;
       return data;
     },
@@ -300,6 +332,7 @@ export function useQuest(slug: string) {
   });
 }
 ```
+
 Получаем кеш, дедупликацию, ретраи, оптимистичные апдейты — бесплатно.
 
 ---
@@ -307,7 +340,9 @@ export function useQuest(slug: string) {
 ## Эпик 2 — Player Flow
 
 ### Story 2.1 — Главная: список опубликованных квестов
+
 **AC**
+
 - Грид карточек, фильтр по городу
 - Только `is_published = true`
 - SEO-friendly URL `/q/wien-faust`
@@ -318,7 +353,9 @@ export function useQuest(slug: string) {
 ---
 
 ### Story 2.2 — Стартовый экран квеста: выбор языка + согласие GDPR
+
 **AC**
+
 - Hero: название, описание, фото, длительность, сложность
 - Селектор языка (автодетект подсвечен)
 - Чекбокс "согласен с обработкой device_id и никнейма" (см. Story 5.1)
@@ -329,9 +366,11 @@ export function useQuest(slug: string) {
 ---
 
 ### Story 2.3 — Соло-сессия: device_id + nickname
+
 **Как** игрок, **я хочу** ввести никнейм и сразу начать, **чтобы** не регистрироваться.
 
 **AC**
+
 - `device_id` генерится один раз, лежит в `localStorage`
 - Никнейм обязателен, 2–24 символа, валидация на клиенте и сервере
 - Создаётся `sessions` через RPC `start_session`
@@ -339,6 +378,7 @@ export function useQuest(slug: string) {
 - Если для этого device_id уже есть незавершённая сессия квеста — предложить продолжить
 
 **BP — безопасный доступ к localStorage**
+
 ```ts
 // shared/lib/deviceId.ts
 const KEY = 'tt:device_id';
@@ -363,13 +403,16 @@ export function getDeviceId(): string {
 ---
 
 ### Story 2.4 — Команда: создание + join по коду
+
 **AC**
+
 - Лидер: вводит название команды → POST RPC → получает `WLF-47`
 - Участник: вводит код на стартовом экране → попадает в существующую сессию
 - Коллизии: попытка вставки с дубликатом `join_code` ретраится (до 5 раз)
 - Код невозможно угадать — алфавит без `0/O`, `1/I/L`
 
 **BP — генерация кода**
+
 ```sql
 create or replace function gen_join_code() returns text language sql as $$
   select string_agg(
@@ -381,6 +424,7 @@ $$;
 ```
 
 **BP — unique constraint + retry**, не "проверить и вставить" (race condition):
+
 ```sql
 alter table teams add constraint join_code_unique unique (join_code);
 ```
@@ -388,29 +432,36 @@ alter table teams add constraint join_code_unique unique (join_code);
 ---
 
 ### Story 2.5 — Realtime синхронизация команды
+
 **Как** участник команды, **я хочу** видеть новую загадку сразу как лидер ввёл код, **чтобы** не обновлять страницу.
 
 **AC**
+
 - Подписка на изменения `sessions.current_clue` для своего `session_id`
 - При смене — автоматическая загрузка новой загадки
 - Индикатор "лидер пытается ввести код..."
 - Корректный cleanup подписки при unmount
 
 **BP — supabase realtime**
+
 ```ts
 useEffect(() => {
   const channel = supabase
     .channel(`session:${sessionId}`)
-    .on('postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'sessions',
-          filter: `id=eq.${sessionId}` },
-        (payload) => {
-          queryClient.invalidateQueries({ queryKey: ['clue', sessionId] });
-        })
+    .on(
+      'postgres_changes',
+      { event: 'UPDATE', schema: 'public', table: 'sessions', filter: `id=eq.${sessionId}` },
+      (payload) => {
+        queryClient.invalidateQueries({ queryKey: ['clue', sessionId] });
+      },
+    )
     .subscribe();
-  return () => { supabase.removeChannel(channel); };
+  return () => {
+    supabase.removeChannel(channel);
+  };
 }, [sessionId]);
 ```
+
 Не забываем `removeChannel` — иначе утечка соединений при роутинге.
 
 **BP** — RLS должна разрешать SELECT строк команды всем её участникам по `team_id`, иначе realtime не получит event.
@@ -418,7 +469,9 @@ useEffect(() => {
 ---
 
 ### Story 2.6 — Экран загадки
+
 **AC**
+
 - Текст загадки на текущем языке
 - Картинка места (lazy-loaded, blurhash placeholder)
 - Поле ввода кода (autofocus на десктопе, без autofocus на мобиле)
@@ -430,7 +483,9 @@ useEffect(() => {
 ---
 
 ### Story 2.7 — Проверка кода + rate limit + hint
+
 **AC**
+
 - При вводе → вызов RPC `check_clue_code`
 - Неверно: тряска поля, счётчик уменьшается
 - После N неверных: показ `hint`
@@ -444,31 +499,35 @@ useEffect(() => {
 ---
 
 ### Story 2.8 — QR-сканер
+
 **AC**
+
 - Кнопка "сканировать" просит permission на камеру
 - При распознавании QR — автоподстановка в поле кода и автосабмит
 - Fallback: если permission denied — ручной ввод, без поломки флоу
 
 **BP — `@zxing/browser`** легче, чем `instascan`/`html5-qrcode`, и поддерживает MediaDevices:
+
 ```ts
 import { BrowserQRCodeReader } from '@zxing/browser';
 
 const reader = new BrowserQRCodeReader();
-const controls = await reader.decodeFromVideoDevice(
-  undefined, videoRef.current, (result) => {
-    if (result) {
-      onScan(result.getText());
-      controls.stop();
-    }
+const controls = await reader.decodeFromVideoDevice(undefined, videoRef.current, (result) => {
+  if (result) {
+    onScan(result.getText());
+    controls.stop();
   }
-);
+});
 ```
+
 Всегда `controls.stop()` в cleanup — камера не освободится сама.
 
 ---
 
 ### Story 2.9 — Финальный экран + лидерборд
+
 **AC**
+
 - Поздравление, время прохождения
 - Топ-10 команд квеста (по `finished_at - started_at`)
 - Кнопка "поделиться" → Web Share API с фолбэком на копирование
@@ -481,13 +540,16 @@ const controls = await reader.decodeFromVideoDevice(
 ## Эпик 3 — Admin
 
 ### Story 3.1 — Аутентификация админов
+
 **AC**
+
 - Логин email+пароль через Supabase Auth
 - `/admin/*` за guard'ом
 - Логаут
 - RLS: `auth.role() = 'authenticated'` + проверка членства в `admins` таблице
 
 **BP** — не "роль admin" в JWT (легко забыть выдать), а явная таблица:
+
 ```sql
 create table admins (user_id uuid primary key references auth.users);
 
@@ -499,13 +561,16 @@ create policy "admin only" on quests for all using (
 ---
 
 ### Story 3.2 — CRUD квестов + загадок (десктоп)
+
 **AC**
+
 - Список квестов с статусом publish
 - Форма создания/редакта квеста с табами языков
 - Список загадок квеста с inline-редактированием
 - Превью медиа
 
 **BP — react-hook-form + zod** для форм. Один источник правды для типов и валидации:
+
 ```ts
 const clueSchema = z.object({
   order: z.number().int().min(0),
@@ -518,7 +583,9 @@ type ClueForm = z.infer<typeof clueSchema>;
 ---
 
 ### Story 3.3 — Drag-and-drop порядок загадок
+
 **AC**
+
 - Перетаскивание мышью и тачем
 - Оптимистичное обновление UI
 - Bulk-апдейт `order` одним батчем
@@ -528,6 +595,7 @@ type ClueForm = z.infer<typeof clueSchema>;
 Не `react-beautiful-dnd` — он deprecated.
 
 **BP — обновление `order` как rebalanced sparse list** (10, 20, 30...) или одним UPDATE с `unnest`:
+
 ```sql
 update clues set "order" = data.order
 from (select unnest($1::uuid[]) as id, unnest($2::int[]) as order) data
@@ -537,7 +605,9 @@ where clues.id = data.id;
 ---
 
 ### Story 3.4 — Загрузка медиа в Supabase Storage
+
 **AC**
+
 - Drag-and-drop загрузка
 - Автоконвертация в webp на клиенте (canvas)
 - Превью + прогресс
@@ -548,7 +618,9 @@ where clues.id = data.id;
 ---
 
 ### Story 3.5 — Мобильный мониторинг
+
 **AC**
+
 - Список активных команд/игроков, отсортированный по `last_active_at`
 - Прогресс-бар по каждой
 - Количество последних неверных попыток (выделено красным >5)
@@ -561,7 +633,9 @@ where clues.id = data.id;
 ---
 
 ### Story 3.6 — Тестовый режим
+
 **AC**
+
 - Чекбокс "тестовая сессия" при создании
 - Тестовые сессии помечены `is_test = true`
 - Исключены из лидерборда и статистики
@@ -573,13 +647,16 @@ where clues.id = data.id;
 ## Эпик 4 — Reliability & Compliance
 
 ### Story 4.1 — GDPR-плашка согласия
+
 **AC**
+
 - Модалка при первом заходе — текст что хранится, на сколько, как удалить
 - Чекбокс "согласен" — обязателен для старта
 - Согласие записывается с timestamp и версией текста
 - Кнопка "удалить мои данные" в подвале
 
 **BP — версионируем consent**:
+
 ```ts
 const CONSENT_VERSION = 'v1.2025-01';
 // при изменении текста — bump → юзер пересоглашается
@@ -588,7 +665,9 @@ const CONSENT_VERSION = 'v1.2025-01';
 ---
 
 ### Story 4.2 — Recovery code
+
 **AC**
+
 - При старте показывается 6-символьный код "сохрани на случай смены устройства"
 - На главной — поле "продолжить по коду"
 - Привязывает текущий `device_id` к существующей сессии
@@ -598,13 +677,16 @@ const CONSENT_VERSION = 'v1.2025-01';
 ---
 
 ### Story 4.3 — pg_cron автоудаление
+
 **AC**
+
 - Job каждый час
 - Удаляет незавершённые с `last_active_at < now() - interval '48 hours'`
 - Удаляет завершённые с `finished_at < now() - interval '7 days'`
 - Каскадно удаляются `attempt_log`
 
 **BP**
+
 ```sql
 select cron.schedule('cleanup-sessions', '0 * * * *', $$
   delete from sessions
@@ -612,12 +694,15 @@ select cron.schedule('cleanup-sessions', '0 * * * *', $$
       or (finished_at is not null and finished_at  < now() - interval '7 days');
 $$);
 ```
+
 `on delete cascade` на FK от `attempt_log` — не оставлять висящие логи.
 
 ---
 
 ### Story 4.4 — Brute-force protection (доп. к Story 2.7)
+
 **AC**
+
 - Логика rate-limit в RPC уже есть
 - Дополнительно: глобальный лимит по `device_id` (защита от ботов, перебирающих сессии)
 - Метрика "подозрительные попытки" в админке
@@ -627,7 +712,9 @@ $$);
 ---
 
 ### Story 4.5 — Observability
+
 **AC**
+
 - Sentry для фронта
 - Supabase logs включены
 - Дашборд: активные сессии, средняя длительность, % дошедших до конца
@@ -639,17 +726,21 @@ $$);
 ## Эпик 5 — Polish
 
 ### Story 5.1 — Анимации переходов между загадками
+
 - framer-motion для exit/enter
 - Аудио-фидбек на правильный ответ (опционально, mute-toggle)
 
 ### Story 5.2 — Карта (опционально)
+
 - Если у загадки есть lat/lng — показать кнопку "на карте"
 - Leaflet + OSM tiles (бесплатно, без API key)
 
 ### Story 5.3 — Шаринг результата
+
 - OG-картинка с временем и названием команды (Supabase Edge Function рендерит через satori)
 
 ### Story 5.4 — Тёмная тема
+
 - Tailwind `dark:` классы
 - Уважаем `prefers-color-scheme`
 
@@ -658,21 +749,25 @@ $$);
 ## Сквозные best practices
 
 **Тестирование**
+
 - Vitest + Testing Library для компонентов
 - Playwright для e2e сквозного флоу (start → solve → finish)
 - БД-тесты pgTAP для RPC-функций — критично, там вся бизнес-логика
 
 **CI**
+
 - PR: lint, typecheck, unit, e2e, build
 - main: автодеплой превью на Netlify
 - Миграции — отдельный job с manual approval на prod
 
 **Git**
+
 - Conventional commits → автогенерируемый changelog
 - Trunk-based, короткие ветки, squash merge
 - `main` всегда деплоится
 
 **Безопасность (сводно)**
+
 1. `clues.code` никогда не уходит на клиент — только через RPC
 2. Все мутации игрока — через SECURITY DEFINER функции, не голые insert/update
 3. RLS включён на КАЖДОЙ таблице (`alter table ... enable row level security`)
@@ -693,6 +788,7 @@ $$);
 Все экраны игрока используют одну палитру и набор примитивов. Их нужно собрать **до** имплементации экранов, иначе будет копипаст инлайн-стилей.
 
 ### Story DS.1 — Tailwind config + design tokens
+
 Извлечь токены из дизайна в `tailwind.config.ts`. Все цвета — семантические имена, не "amber-500".
 
 ```ts
@@ -703,20 +799,26 @@ export default {
     extend: {
       colors: {
         // mobile dark surfaces
-        bg:        { DEFAULT: '#0A0A0A', chrome: '#1A1A1A' },
-        surface:   { DEFAULT: '#1C1C1E', raised: '#232323', hint: '#2A2200' },
-        border:    { DEFAULT: '#2C2C2E', input: '#3A3A3C' },
-        text:      { DEFAULT: '#FFFFFF', muted: '#8E8E93', body: '#C7C7CC', hint: '#E8D5A3' },
-        accent:    { DEFAULT: '#F5A623', soft: '#FFF8EC' },
-        danger:    '#FF453A',
-        success:   '#32D74B',
+        bg: { DEFAULT: '#0A0A0A', chrome: '#1A1A1A' },
+        surface: { DEFAULT: '#1C1C1E', raised: '#232323', hint: '#2A2200' },
+        border: { DEFAULT: '#2C2C2E', input: '#3A3A3C' },
+        text: { DEFAULT: '#FFFFFF', muted: '#8E8E93', body: '#C7C7CC', hint: '#E8D5A3' },
+        accent: { DEFAULT: '#F5A623', soft: '#FFF8EC' },
+        danger: '#FF453A',
+        success: '#32D74B',
         // admin light surfaces
         adm: {
-          bg: '#FFFFFF', sidebar: '#F5F5F7', border: '#E5E5E7',
-          text: '#1C1C1E', muted: '#6E6E73', placeholder: '#9E9E9E',
+          bg: '#FFFFFF',
+          sidebar: '#F5F5F7',
+          border: '#E5E5E7',
+          text: '#1C1C1E',
+          muted: '#6E6E73',
+          placeholder: '#9E9E9E',
           stuck: '#FFF5F5',
-          publishedBg: '#DCFCE7', publishedFg: '#166534',
-          draftBg:     '#FEF9C3', draftFg:     '#854D0E',
+          publishedBg: '#DCFCE7',
+          publishedFg: '#166534',
+          draftBg: '#FEF9C3',
+          draftFg: '#854D0E',
         },
       },
       fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
@@ -724,9 +826,11 @@ export default {
       height: { btn: '52px', input: '52px', ctrl: '48px' },
       keyframes: {
         livepulse: { '0%,100%': { opacity: '1' }, '50%': { opacity: '0.35' } },
-        shake: { '0%,100%': { transform: 'translateX(0)' },
-                 '25%': { transform: 'translateX(-6px)' },
-                 '75%': { transform: 'translateX(6px)' } },
+        shake: {
+          '0%,100%': { transform: 'translateX(0)' },
+          '25%': { transform: 'translateX(-6px)' },
+          '75%': { transform: 'translateX(6px)' },
+        },
       },
       animation: {
         livepulse: 'livepulse 1.5s ease-in-out infinite',
@@ -740,18 +844,19 @@ export default {
 **BP** — никаких CSS variables в инлайне. Семантические имена (`bg-surface`) выживают редизайн, `bg-zinc-900` — нет.
 
 ### Story DS.2 — Базовые UI-компоненты
+
 В `shared/ui/`. Все принимают `className` для override и forward ref.
 
-| Компонент | Где используется | API |
-|---|---|---|
-| `Screen` | каркас всех мобильных экранов | `<Screen title? onBack?>` — даёт `min-h-dvh bg-bg`, status-bar spacer 59px, sticky top-bar |
-| `TopBar` | внутри `Screen` | `title`, опциональный back-chevron слева (44×44 hit-area) |
-| `Button` | везде | варианты: `primary` (amber filled), `secondary` (`bg-border`), `ghost`; size: `md` (h-52), `sm` (h-32) |
-| `TextInput` | nickname, code, team name | состояния: idle/focused/error; focus border `accent`, error border `danger` |
-| `Card` | clue card, stats | `rounded-card bg-surface p-5` |
-| `Pill` | language toggle | active: `bg-accent text-bg`, inactive: `bg-surface text-muted` |
-| `ProgressBar` | под top-bar в `/play` | 3px высота, `bg-border` track, `bg-accent` fill |
-| `BottomDock` | sticky панель ввода кода | `border-t border-border bg-bg pt-3 px-4 pb-7` (safe-area) |
+| Компонент     | Где используется              | API                                                                                                    |
+| ------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `Screen`      | каркас всех мобильных экранов | `<Screen title? onBack?>` — даёт `min-h-dvh bg-bg`, status-bar spacer 59px, sticky top-bar             |
+| `TopBar`      | внутри `Screen`               | `title`, опциональный back-chevron слева (44×44 hit-area)                                              |
+| `Button`      | везде                         | варианты: `primary` (amber filled), `secondary` (`bg-border`), `ghost`; size: `md` (h-52), `sm` (h-32) |
+| `TextInput`   | nickname, code, team name     | состояния: idle/focused/error; focus border `accent`, error border `danger`                            |
+| `Card`        | clue card, stats              | `rounded-card bg-surface p-5`                                                                          |
+| `Pill`        | language toggle               | active: `bg-accent text-bg`, inactive: `bg-surface text-muted`                                         |
+| `ProgressBar` | под top-bar в `/play`         | 3px высота, `bg-border` track, `bg-accent` fill                                                        |
+| `BottomDock`  | sticky панель ввода кода      | `border-t border-border bg-bg pt-3 px-4 pb-7` (safe-area)                                              |
 
 **BP — safe-area**: bottom padding всегда `pb-[max(env(safe-area-inset-bottom),28px)]`. Иначе на iPhone дом-индикатор перекроет кнопку.
 
@@ -761,7 +866,7 @@ export default {
 
 ---
 
-## Screen 1 — Welcome  →  Story 2.1 (Главная) + точка входа
+## Screen 1 — Welcome → Story 2.1 (Главная) + точка входа
 
 **Файл**: `Screen 1 - Welcome.dc.html`
 **Маршрут**: `/` (или `/q/:slug` при глубокой ссылке) — если квест **один**, главная и есть его welcome.
@@ -769,6 +874,7 @@ export default {
 **Что на экране**: логотип-пин (амбер), название TrailTale, тайтл, две CTA: "Get Started" (primary) и ссылка-текст "Have a team code?".
 
 **Имплементация**
+
 ```
 features/quests/WelcomeScreen.tsx
 └── <Screen>
@@ -782,6 +888,7 @@ features/quests/WelcomeScreen.tsx
 ```
 
 **Состояния**
+
 - Загрузка списка квестов из БД (если один — сразу видим брендинг этого квеста, если несколько — этот экран показывает агрегатное "выберите квест")
 - "Have a team code?" → bottom sheet с инпутом → POST RPC `join_team_by_code(code)` → редирект на `/play/:sessionId`
 
@@ -789,23 +896,27 @@ features/quests/WelcomeScreen.tsx
 
 ---
 
-## Screen 2 — Language & Mode  →  Story 2.2 + Story 0.3 (UI часть)
+## Screen 2 — Language & Mode → Story 2.2 + Story 0.3 (UI часть)
 
 **Файл**: `Screen 2 - Language & Mode.dc.html`
 **Маршрут**: `/q/:slug/setup`
 
 **Что на экране**:
+
 - TopBar "New Game" с back-chevron
 - Секция "CHOOSE LANGUAGE" — три pill-кнопки (🇺🇦 UA, 🇬🇧 EN, 🇦🇹 DE)
 - Секция "HOW DO YOU PLAY?" — две вертикальные карточки Solo / Team. Активная карточка имеет вертикальную амбер-полоску слева (2px) и `bg-surface-raised`.
 - Sticky bottom: "Continue"
 
 **Имплементация**
+
 ```tsx
 const [lang, setLang] = useState<Lang>(detectBrowserLang());
 const [mode, setMode] = useState<'solo' | 'team'>('solo');
 
-useEffect(() => { i18n.changeLanguage(lang); }, [lang]);
+useEffect(() => {
+  i18n.changeLanguage(lang);
+}, [lang]);
 
 const onContinue = () => {
   navigate(mode === 'solo' ? `/q/${slug}/nickname` : `/q/${slug}/team`);
@@ -813,6 +924,7 @@ const onContinue = () => {
 ```
 
 **Важно**
+
 - Языки в pill-row фильтруются по `Object.keys(quest.title)` — нет смысла предлагать DE, если на DE нет контента
 - Выбранный язык пишем в `localStorage` как `tt:lang` и **позже** в `sessions.lang` (когда сессия создастся)
 - Карточки Solo/Team — это `<button role="radio">` с aria-checked, не div+onClick
@@ -821,7 +933,7 @@ const onContinue = () => {
 
 ---
 
-## Screen 3 — Nickname Entry  →  Story 2.3
+## Screen 3 — Nickname Entry → Story 2.3
 
 **Файл**: `Screen 3 - Nickname Entry.dc.html`
 **Маршрут**: `/q/:slug/nickname` (solo) | `/q/:slug/team/nickname` (team — после join/create)
@@ -829,6 +941,7 @@ const onContinue = () => {
 **Что на экране**: H2 "What's your name?", подпись "Shown on the leaderboard", TextInput с counter "0 / 20" в правом верху, sticky "Continue" над клавиатурой.
 
 **Имплементация**
+
 ```tsx
 const schema = z.object({
   nickname: z.string().trim().min(2, t('errors.tooShort')).max(20),
@@ -850,6 +963,7 @@ const value = form.watch('nickname') ?? '';
 ```
 
 **Состояния**
+
 - Idle → focused (border меняется `border-input` → `border-accent`)
 - Continue с `opacity: 0.4` пока пусто — не серая кнопка, а полупрозрачная (паттерн iOS)
 - При сабмите: `startSession({ nickname, deviceId, lang })` RPC → redirect `/play/:sessionId`
@@ -858,17 +972,19 @@ const value = form.watch('nickname') ?? '';
 
 ---
 
-## Screen 4 — Team Create / Join  →  Story 2.4
+## Screen 4 — Team Create / Join → Story 2.4
 
 **Файл**: `Screen 4 - Team Create Join.dc.html`
 **Маршрут**: `/q/:slug/team`
 
 **Что на экране**:
+
 - Секция "CREATE A TEAM" — поле "Team name", подпись "You'll get a 6-character join code to share", primary "Create Team"
 - Разделитель "or"
 - Секция "JOIN A TEAM" — поле "Enter code — e.g. WLF-47" (letter-spacing 0.15em когда есть текст), secondary "Join"
 
 **Имплементация**
+
 ```tsx
 // Создание
 const onCreate = async (name: string) => {
@@ -878,8 +994,11 @@ const onCreate = async (name: string) => {
 
 // Присоединение — авто-форматирование XXX-XX
 const formatJoinCode = (raw: string) => {
-  const v = raw.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5);
-  return v.length > 3 ? `${v.slice(0,3)}-${v.slice(3)}` : v;
+  const v = raw
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '')
+    .slice(0, 5);
+  return v.length > 3 ? `${v.slice(0, 3)}-${v.slice(3)}` : v;
 };
 ```
 
@@ -889,18 +1008,20 @@ const formatJoinCode = (raw: string) => {
 
 ---
 
-## Screen 5 — Active Clue  →  Story 2.6
+## Screen 5 — Active Clue → Story 2.6
 
 **Файл**: `Screen 5 - Active Clue.dc.html` (+ вариант `-print` для печатной версии)
 **Маршрут**: `/play/:sessionId` (главный экран игры)
 
 **Что на экране**:
+
 - TopBar: слева название квеста, справа `3 / 6` амбер-цветом
 - ProgressBar 3px под TopBar (`width = current_clue / total * 100%`)
 - Card с загадкой: метка "CLUE 3" амбер, H2 заголовок, body-текст, дивайдер, аккордеон "Need a hint?"
 - Sticky bottom-dock: TextInput "Enter code" + amber pill-button "Submit"/`→`, ниже "5 attempts remaining"
 
 **Структура**
+
 ```
 features/play/PlayScreen.tsx
 ├── usePlaySession(sessionId)   // подписка realtime + текущая загадка
@@ -914,6 +1035,7 @@ features/play/PlayScreen.tsx
 ```
 
 **ClueCard — состояния hint**
+
 - `hidden`: накопилось меньше `attempts_before_hint` ошибок → ряд "Need a hint?" не кликабелен (dim) или вообще скрыт (политика квеста)
 - `closed`: доступен, чеврон вниз
 - `open`: чеврон вверх, под ним амбер-блок `bg-surface-hint` с italic текстом, иконка лампочки амбер
@@ -924,28 +1046,31 @@ features/play/PlayScreen.tsx
 
 ---
 
-## Screen 6 — Code Entry (Keyboard up, scrolled)  →  расширение Story 2.6 + 2.7
+## Screen 6 — Code Entry (Keyboard up, scrolled) → расширение Story 2.6 + 2.7
 
 **Файл**: `Screen 6 - Code Entry Keyboard.dc.html`
 
 **Что меняется относительно Screen 5**:
+
 - Клавиатура поднята → контент проскроллен вниз (`ref.scrollTop = 230` в дизайне)
 - Сверху контента появляется **fade-overlay** `linear-gradient(to bottom, #0A0A0A 0%, transparent 100%)` высотой 72px — индикатор что выше есть контент
 - Inputfield в фокусе (amber border), заполнен ("VASIL", letter-spacing 0.12em)
 - Submit стал круглой иконкой со стрелкой (60×48), не текстом — экономия места
 
 **Имплементация**
+
 ```tsx
 // ScrollIndicator
-{showTopFade && (
-  <div className="pointer-events-none absolute top-0 inset-x-0 h-18
-                  bg-gradient-to-b from-bg to-transparent" />
-)}
+{
+  showTopFade && (
+    <div className="h-18 pointer-events-none absolute inset-x-0 top-0 bg-gradient-to-b from-bg to-transparent" />
+  );
+}
 
 // CodeInputRow адаптируется по ширине ввода
 <Button primary size="icon" className={value ? '' : 'opacity-40'}>
   {value ? <ArrowRight /> : 'Submit'}
-</Button>
+</Button>;
 ```
 
 **Trigger**: при `:focus` инпута переключаем submit с текста на иконку (узкая клавиатура съедает место).
@@ -954,11 +1079,12 @@ features/play/PlayScreen.tsx
 
 ---
 
-## Screen 7 — Wrong Code + Hint  →  Story 2.7 (error state)
+## Screen 7 — Wrong Code + Hint → Story 2.7 (error state)
 
 **Файл**: `Screen 7 - Wrong Code Hint.dc.html`
 
 **Что меняется**:
+
 - Input border: `danger` (1.5px `#FF453A`)
 - Под инпутом ряд с иконкой круг-крест и "Incorrect code. Try again." в `danger`
 - Счётчик стал `danger`: "Attempts remaining: 3"
@@ -966,6 +1092,7 @@ features/play/PlayScreen.tsx
 - Hint раскрыт (показан амбер-блок с текстом)
 
 **Имплементация — статус-машина инпута**
+
 ```ts
 type SubmitState = 'idle' | 'submitting' | 'wrong' | 'rateLimited' | 'correct';
 
@@ -974,8 +1101,15 @@ const [state, setState] = useState<SubmitState>('idle');
 const onSubmit = async () => {
   setState('submitting');
   const r = await supabase.rpc('check_clue_code', { p_session_id, p_code: code });
-  if (r.data.error === 'rate_limited') { setState('rateLimited'); startCountdown(r.data.retry_after); return; }
-  if (r.data.correct) { setState('correct'); /* navigate /correct */ return; }
+  if (r.data.error === 'rate_limited') {
+    setState('rateLimited');
+    startCountdown(r.data.retry_after);
+    return;
+  }
+  if (r.data.correct) {
+    setState('correct');
+    /* navigate /correct */ return;
+  }
   setState('wrong');
   inputRef.current?.classList.add('animate-shake');
   setTimeout(() => inputRef.current?.classList.remove('animate-shake'), 350);
@@ -991,12 +1125,13 @@ const onSubmit = async () => {
 
 ---
 
-## Screen 8 — Correct / Level Complete  →  Story 2.6 (transition)
+## Screen 8 — Correct / Level Complete → Story 2.6 (transition)
 
 **Файл**: `Screen 8 - Correct Level Complete.dc.html`
 **Маршрут**: НЕ отдельный маршрут — это **intermediate overlay** ~1.5s между загадками.
 
 **Что на экране**:
+
 - Radial gradient светится из центра (`radial-gradient(ellipse 260px 260px at 50% 42%, rgba(245,166,35,0.08), transparent)`)
 - 80×80 амбер круг с чёрной галочкой
 - "Correct!" 34px bold
@@ -1006,6 +1141,7 @@ const onSubmit = async () => {
 - "Next Clue" CTA
 
 **Имплементация**
+
 ```tsx
 // показывается внутри PlayScreen как overlay, не отдельный route
 <AnimatePresence>
@@ -1014,7 +1150,8 @@ const onSubmit = async () => {
       initial={{ opacity: 0, scale: 0.96 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0 }}
-      className="absolute inset-0 bg-bg flex flex-col">
+      className="absolute inset-0 flex flex-col bg-bg"
+    >
       <CheckBadge />
       <h1 class="text-[34px] font-bold">{t('correct')}</h1>
       <p>{t('youFound')}</p>
@@ -1035,12 +1172,13 @@ const onSubmit = async () => {
 
 ---
 
-## Screen 9 — Quest Complete  →  Story 2.9
+## Screen 9 — Quest Complete → Story 2.9
 
 **Файл**: `Screen 9 - Quest Complete.dc.html`
 **Маршрут**: `/play/:sessionId/complete` (или state внутри `/play`)
 
 **Что на экране**:
+
 - TopBar "TrailTale" centered, без back
 - Трофей-иконка 64×64 амбер outline
 - "Quest Complete" 30px + emoji-аватар команды "🐺 Вовки"
@@ -1049,6 +1187,7 @@ const onSubmit = async () => {
 - Sticky bottom: primary "Share Result" + secondary "Explore More Quests"
 
 **Имплементация**
+
 ```tsx
 const stats = useFinalStats(sessionId);    // RPC возвращает {timeMs, clues, attempts}
 const leaderboard = useLeaderboard(questId);  // materialized view, см. Story 2.9
@@ -1063,6 +1202,7 @@ const leaderboard = useLeaderboard(questId);  // materialized view, см. Story 
 ```
 
 **Share**: Web Share API с fallback на copy
+
 ```ts
 const share = async () => {
   const payload = {
@@ -1079,13 +1219,14 @@ const share = async () => {
 
 ---
 
-## Screen 10 — Admin Quest Dashboard  →  Story 3.1 + 3.2 (список)
+## Screen 10 — Admin Quest Dashboard → Story 3.1 + 3.2 (список)
 
 **Файл**: `Screen 10 - Admin Quest Dashboard.dc.html`
 **Маршрут**: `/admin/quests`
 **Layout**: десктоп, 1440×830, light theme.
 
 **Структура**
+
 ```
 features/admin/AdminLayout.tsx
 ├── <Sidebar>  // 240px, navItems: Quests, Players, Analytics, Settings
@@ -1096,6 +1237,7 @@ features/admin/AdminLayout.tsx
 `AdminLayout` оборачивает все админ-маршруты (`/admin/*`). Активный nav-item: `border-l-3 border-accent bg-accent-soft`, неактивный: `border-transparent`.
 
 **`AdminQuestsPage`**
+
 ```tsx
 <PageHeader title="My Quests" action={<Button primary icon={Plus}>New Quest</Button>} />
 <SearchBar placeholder="Search quests" value={q} onChange={setQ} className="max-w-[480px]" />
@@ -1106,6 +1248,7 @@ features/admin/AdminLayout.tsx
 ```
 
 **QuestCard**
+
 - Cover: `h-20` linear-gradient. **Gradient — поле в БД** (`quests.cover_gradient: text`), либо генерируется из `quests.theme_color`. Новая миграция.
 - Status badge: `Published` (зелёный), `Draft` (жёлтый). См. tokens `adm.publishedBg/Fg`, `adm.draftBg/Fg`.
 - Actions: Edit (outlined amber), View Live (text + arrow)
@@ -1116,12 +1259,13 @@ features/admin/AdminLayout.tsx
 
 ---
 
-## Screen 11 — Admin Clue List + DnD  →  Story 3.2 + 3.3
+## Screen 11 — Admin Clue List + DnD → Story 3.2 + 3.3
 
 **Файл**: `Screen 11 - Admin Clue List.dc.html`
 **Маршрут**: `/admin/quests/:slug`
 
 **Что на экране**:
+
 - Breadcrumb "Quests > Faust Quest"
 - Quest meta row: inline-редактируемый заголовок (border-bottom on hover), pill города, language-tabs UA/EN/DE, Published toggle
 - "Clues (6)" + "+ Add Clue"
@@ -1129,24 +1273,26 @@ features/admin/AdminLayout.tsx
 - **DnD preview**: перетаскиваемая строка — `transform: rotate(1.5deg) translateY(-1px)` + `box-shadow: 0 6px 20px rgba(0,0,0,0.13)`, точки в handle становятся амбер
 
 **Имплементация (`@dnd-kit/sortable`)**
+
 ```tsx
 const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 const onDragEnd = ({ active, over }) => {
   if (!over || active.id === over.id) return;
   const reordered = arrayMove(clues, oldIdx, newIdx);
-  setClues(reordered);  // optimistic
+  setClues(reordered); // optimistic
   reorderClues.mutate(reordered.map((c, i) => ({ id: c.id, order: i })));
 };
 
 <DndContext sensors={sensors} onDragEnd={onDragEnd} modifiers={[restrictToVerticalAxis]}>
-  <SortableContext items={clues.map(c => c.id)} strategy={verticalListSortingStrategy}>
-    {clues.map(c => <SortableClueRow key={c.id} clue={c} />)}
+  <SortableContext items={clues.map((c) => c.id)} strategy={verticalListSortingStrategy}>
+    {clues.map((c) => (
+      <SortableClueRow key={c.id} clue={c} />
+    ))}
   </SortableContext>
-  <DragOverlay>
-    {activeId && <ClueRow clue={find(activeId)} dragging />}
-  </DragOverlay>
-</DndContext>
+  <DragOverlay>{activeId && <ClueRow clue={find(activeId)} dragging />}</DragOverlay>
+</DndContext>;
 ```
+
 **BP** — `DragOverlay` нужен, чтобы поднятая строка выглядела как в дизайне (rotated + shadow) — без него она остаётся в потоке.
 
 **BP** — masked code: НЕ загружаем `code` с сервера для list-view. Маска — это просто `••••••` (всегда 6 точек, не отражает длину). При клике на "глаз" — отдельный RPC `reveal_code(clue_id)` который проверяет, что юзер админ, и возвращает code на 5 секунд (с автоскрытием).
@@ -1157,7 +1303,7 @@ const onDragEnd = ({ active, over }) => {
 
 ---
 
-## Screen 12 — Admin Clue Editor  →  Story 3.2 + 3.4
+## Screen 12 — Admin Clue Editor → Story 3.2 + 3.4
 
 **Файл**: `Screen 12 - Admin Clue Editor.dc.html`
 **Маршрут**: `/admin/quests/:slug/clues/:clueId`
@@ -1165,6 +1311,7 @@ const onDragEnd = ({ active, over }) => {
 **Layout**: две колонки `flex: 6` (60%) + `flex: 4` (40%).
 
 **Левая колонка — поля контента**
+
 - Language tabs UA/EN/DE с подчёркиванием (`border-b-2 border-accent` у активной). Active border `-mb-[2px]` чтобы перекрыть border контейнера.
 - Clue Title — input, при focus amber border (1.5px)
 - Clue Text — textarea h-140px, font-mono **нет**, обычный
@@ -1172,6 +1319,7 @@ const onDragEnd = ({ active, over }) => {
 - Secret Code — `type="password"`, шрифт mono, letter-spacing 0.15em, иконка eye-off справа, счётчик "8 / 20 chars"
 
 **Правая колонка — мета**
+
 - Location card (`bg-adm-sidebar p-4 rounded-xl`): Location Name input, map placeholder (зелёный gradient с сеткой), "Change on map →"
 - Attempts before hint card: stepper −/+/число
 - Media upload: dashed-border drop zone с placeholder icon
@@ -1179,6 +1327,7 @@ const onDragEnd = ({ active, over }) => {
 **Sticky top action bar**: Discard (ghost) + Save Changes (primary)
 
 **Имплементация формы**
+
 ```tsx
 const clueSchema = z.object({
   title: z.record(z.enum(['ua','en','de']), z.string().min(1)),
@@ -1211,12 +1360,13 @@ const form = useForm({ resolver: zodResolver(clueSchema), defaultValues: clue })
 
 ---
 
-## Screen 13 — Admin Live Monitoring  →  Story 3.5
+## Screen 13 — Admin Live Monitoring → Story 3.5
 
 **Файл**: `Screen 13 - Admin Live Monitoring.dc.html`
 **Маршрут**: `/admin/quests/:slug/live`
 
 **Что на экране**:
+
 - Header: "Faust Quest — Live" + зелёный пульсирующий dot + "Live" + "Last updated 5s ago" + refresh иконка
 - Pill-фильтры: All (3) / Active (2) / Finished (1) / **Stuck (1)** (амбер активный, серый неактивный)
 - Таблица сетка `2fr 1.5fr 80px 90px 110px 180px`, шапка SMALL CAPS muted
@@ -1229,6 +1379,7 @@ const form = useForm({ resolver: zodResolver(clueSchema), defaultValues: clue })
 | Finished | `finished_at IS NOT NULL` | в Progress колонке зелёная check-иконка + "Finished", Last Active = "Finished" зелёным |
 
 **Actions per row**
+
 - `Reset` (outlined amber) → confirm-dialog → RPC `admin_reset_session(id, to_clue)` → лог в `admin_actions`
 - `Skip` (outlined gray) → RPC `admin_skip_clue(id)` → инкремент `current_clue` без `attempt_log`-записи
 - Delete (red trash) → confirm → cascade delete
@@ -1236,6 +1387,7 @@ const form = useForm({ resolver: zodResolver(clueSchema), defaultValues: clue })
 Для Finished доступен только Delete.
 
 **Имплементация**
+
 ```tsx
 const { data: rows } = useLiveSessions(questId, filter);
 // useLiveSessions — TanStack Query + Supabase Realtime подписка на sessions WHERE quest_id
@@ -1244,12 +1396,13 @@ const isStuck = (row) =>
   row.attempts_last_5min >= 15 || (row.last_active_min_on_clue > 5 && row.attempts >= 10);
 
 // pulse Live indicator
-<div className="w-2 h-2 rounded-full bg-success animate-livepulse" />
+<div className="h-2 w-2 animate-livepulse rounded-full bg-success" />;
 ```
 
 **Refresh source of truth**: реалтайм Postgres-changes. "Last updated" обновляется по каждому event'у. Refresh-иконка — ручной inv `queryClient.invalidateQueries`.
 
 **BP** — `stuck` вычисляется в SQL view, не на клиенте. Иначе разные фильтры покажут разное.
+
 ```sql
 create view live_sessions as
 select s.*,

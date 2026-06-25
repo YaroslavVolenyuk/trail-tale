@@ -1,14 +1,15 @@
 // e2e-db-tests/vitest.config.ts
-import { defineConfig } from "file:///sessions/keen-kind-newton/mnt/TrailTale/node_modules/vitest/dist/config.js";
-import { fileURLToPath } from "node:url";
-import path from "node:path";
-var __vite_injected_original_import_meta_url = "file:///sessions/keen-kind-newton/mnt/TrailTale/e2e-db-tests/vitest.config.ts";
+import { defineConfig } from 'file:///sessions/keen-kind-newton/mnt/TrailTale/node_modules/vitest/dist/config.js';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
+var __vite_injected_original_import_meta_url =
+  'file:///sessions/keen-kind-newton/mnt/TrailTale/e2e-db-tests/vitest.config.ts';
 var root = path.dirname(fileURLToPath(__vite_injected_original_import_meta_url));
 var vitest_config_default = defineConfig({
   test: {
     root,
-    include: ["suites/**/*.test.ts"],
-    setupFiles: [path.join(root, "setup/loadEnv.ts")],
+    include: ['suites/**/*.test.ts'],
+    setupFiles: [path.join(root, 'setup/loadEnv.ts')],
     // Tests hit a real (remote) Supabase project — generous timeouts
     testTimeout: 3e4,
     hookTimeout: 3e4,
@@ -16,10 +17,8 @@ var vitest_config_default = defineConfig({
     fileParallelism: false,
     // Inside a suite, keep tests serial (state builds up across `it` blocks)
     sequence: { concurrent: false },
-    reporters: ["verbose"]
-  }
+    reporters: ['verbose'],
+  },
 });
-export {
-  vitest_config_default as default
-};
+export { vitest_config_default as default };
 //# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAic291cmNlcyI6IFsiZTJlLWRiLXRlc3RzL3ZpdGVzdC5jb25maWcudHMiXSwKICAic291cmNlc0NvbnRlbnQiOiBbImNvbnN0IF9fdml0ZV9pbmplY3RlZF9vcmlnaW5hbF9kaXJuYW1lID0gXCIvc2Vzc2lvbnMva2Vlbi1raW5kLW5ld3Rvbi9tbnQvVHJhaWxUYWxlL2UyZS1kYi10ZXN0c1wiO2NvbnN0IF9fdml0ZV9pbmplY3RlZF9vcmlnaW5hbF9maWxlbmFtZSA9IFwiL3Nlc3Npb25zL2tlZW4ta2luZC1uZXd0b24vbW50L1RyYWlsVGFsZS9lMmUtZGItdGVzdHMvdml0ZXN0LmNvbmZpZy50c1wiO2NvbnN0IF9fdml0ZV9pbmplY3RlZF9vcmlnaW5hbF9pbXBvcnRfbWV0YV91cmwgPSBcImZpbGU6Ly8vc2Vzc2lvbnMva2Vlbi1raW5kLW5ld3Rvbi9tbnQvVHJhaWxUYWxlL2UyZS1kYi10ZXN0cy92aXRlc3QuY29uZmlnLnRzXCI7aW1wb3J0IHsgZGVmaW5lQ29uZmlnIH0gZnJvbSAndml0ZXN0L2NvbmZpZyc7XG5pbXBvcnQgeyBmaWxlVVJMVG9QYXRoIH0gZnJvbSAnbm9kZTp1cmwnO1xuaW1wb3J0IHBhdGggZnJvbSAnbm9kZTpwYXRoJztcblxuY29uc3Qgcm9vdCA9IHBhdGguZGlybmFtZShmaWxlVVJMVG9QYXRoKGltcG9ydC5tZXRhLnVybCkpO1xuXG5leHBvcnQgZGVmYXVsdCBkZWZpbmVDb25maWcoe1xuICB0ZXN0OiB7XG4gICAgcm9vdCxcbiAgICBpbmNsdWRlOiBbJ3N1aXRlcy8qKi8qLnRlc3QudHMnXSxcbiAgICBzZXR1cEZpbGVzOiBbcGF0aC5qb2luKHJvb3QsICdzZXR1cC9sb2FkRW52LnRzJyldLFxuICAgIC8vIFRlc3RzIGhpdCBhIHJlYWwgKHJlbW90ZSkgU3VwYWJhc2UgcHJvamVjdCBcdTIwMTQgZ2VuZXJvdXMgdGltZW91dHNcbiAgICB0ZXN0VGltZW91dDogMzBfMDAwLFxuICAgIGhvb2tUaW1lb3V0OiAzMF8wMDAsXG4gICAgLy8gUnVuIHN1aXRlcyBzZXF1ZW50aWFsbHkgc28gY2xlYW51cCBvZiBvbmUgZG9lc24ndCBmaWdodCB3aXRoIGFub3RoZXJcbiAgICBmaWxlUGFyYWxsZWxpc206IGZhbHNlLFxuICAgIC8vIEluc2lkZSBhIHN1aXRlLCBrZWVwIHRlc3RzIHNlcmlhbCAoc3RhdGUgYnVpbGRzIHVwIGFjcm9zcyBgaXRgIGJsb2NrcylcbiAgICBzZXF1ZW5jZTogeyBjb25jdXJyZW50OiBmYWxzZSB9LFxuICAgIHJlcG9ydGVyczogWyd2ZXJib3NlJ10sXG4gIH0sXG59KTtcbiJdLAogICJtYXBwaW5ncyI6ICI7QUFBcVYsU0FBUyxvQkFBb0I7QUFDbFgsU0FBUyxxQkFBcUI7QUFDOUIsT0FBTyxVQUFVO0FBRm1NLElBQU0sMkNBQTJDO0FBSXJRLElBQU0sT0FBTyxLQUFLLFFBQVEsY0FBYyx3Q0FBZSxDQUFDO0FBRXhELElBQU8sd0JBQVEsYUFBYTtBQUFBLEVBQzFCLE1BQU07QUFBQSxJQUNKO0FBQUEsSUFDQSxTQUFTLENBQUMscUJBQXFCO0FBQUEsSUFDL0IsWUFBWSxDQUFDLEtBQUssS0FBSyxNQUFNLGtCQUFrQixDQUFDO0FBQUE7QUFBQSxJQUVoRCxhQUFhO0FBQUEsSUFDYixhQUFhO0FBQUE7QUFBQSxJQUViLGlCQUFpQjtBQUFBO0FBQUEsSUFFakIsVUFBVSxFQUFFLFlBQVksTUFBTTtBQUFBLElBQzlCLFdBQVcsQ0FBQyxTQUFTO0FBQUEsRUFDdkI7QUFDRixDQUFDOyIsCiAgIm5hbWVzIjogW10KfQo=

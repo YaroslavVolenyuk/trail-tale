@@ -2,14 +2,21 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { Screen, Button, BottomDock, TextInput } from '@/shared/ui';
+import { Screen, Button, BottomDock, TextInput, Pill } from '@/shared/ui';
 import { getDeviceId } from '@/shared/lib/deviceId';
 import { useResumeByRecoveryCode, useQuestBySlug } from '@/shared/lib/queries';
+import i18n from '@/shared/i18n';
 import type { Lang } from '@/shared/lib/lang';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const VALID_LANGS: Lang[] = ['uk', 'en', 'de'];
+
+const LANGS: { code: Lang; label: string }[] = [
+  { code: 'uk', label: '🇺🇦 UA' },
+  { code: 'en', label: '🇬🇧 EN' },
+  { code: 'de', label: '🇦🇹 DE' },
+];
 
 function getPreferredLang(): Lang {
   const stored = localStorage.getItem('tt:lang');
@@ -30,7 +37,12 @@ function QuestIcon() {
     <svg width="56" height="56" viewBox="0 0 56 56" fill="none" aria-hidden="true">
       <circle cx="28" cy="28" r="26" stroke="#F5A623" strokeWidth="2" opacity="0.3" />
       <circle cx="28" cy="28" r="18" stroke="#F5A623" strokeWidth="2" opacity="0.6" />
-      <path d="M28 14v6M28 36v6M14 28h6M36 28h6" stroke="#F5A623" strokeWidth="1.5" strokeLinecap="round" />
+      <path
+        d="M28 14v6M28 36v6M14 28h6M36 28h6"
+        stroke="#F5A623"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
       <circle cx="28" cy="28" r="3.5" fill="#F5A623" />
       <path d="M28 21l2.5 6.5H21.5L28 21z" fill="#F5A623" opacity="0.8" />
     </svg>
@@ -46,7 +58,10 @@ function TeamCodeSheet({ onClose }: { onClose: () => void }) {
   const { slug } = useParams<{ slug: string }>();
 
   const formatCode = (raw: string) => {
-    const v = raw.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5);
+    const v = raw
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '')
+      .slice(0, 5);
     return v.length > 3 ? `${v.slice(0, 3)}-${v.slice(3)}` : v;
   };
 
@@ -61,10 +76,10 @@ function TeamCodeSheet({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      <div className="relative w-full bg-surface rounded-t-2xl p-6 pb-[max(env(safe-area-inset-bottom),28px)]">
-        <div className="w-10 h-1 bg-border rounded-full mx-auto mb-6" />
-        <h2 className="text-[22px] font-bold text-white mb-1">{t('haveTeamCode')}</h2>
-        <p className="text-sm text-text-muted mb-5">{t('enterCodeBelow')}</p>
+      <div className="relative w-full rounded-t-2xl bg-surface p-6 pb-[max(env(safe-area-inset-bottom),28px)]">
+        <div className="mx-auto mb-6 h-1 w-10 rounded-full bg-border" />
+        <h2 className="mb-1 text-[22px] font-bold text-white">{t('haveTeamCode')}</h2>
+        <p className="mb-5 text-sm text-text-muted">{t('enterCodeBelow')}</p>
         <TextInput
           value={code}
           onChange={(e) => setCode(formatCode(e.target.value))}
@@ -72,13 +87,9 @@ function TeamCodeSheet({ onClose }: { onClose: () => void }) {
           inputMode="text"
           autoCapitalize="characters"
           autoComplete="off"
-          className="tracking-[0.15em] text-center"
+          className="text-center tracking-[0.15em]"
         />
-        <Button
-          className="mt-4"
-          disabled={code.replace(/-/g, '').length < 5}
-          onClick={handleJoin}
-        >
+        <Button className="mt-4" disabled={code.replace(/-/g, '').length < 5} onClick={handleJoin}>
           {t('joinTeam')}
         </Button>
       </div>
@@ -96,7 +107,10 @@ function RecoverySheet({ onClose }: { onClose: () => void }) {
   const [err, setErr] = useState('');
 
   const formatCode = (raw: string) => {
-    const v = raw.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+    const v = raw
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '')
+      .slice(0, 6);
     return v.length > 3 ? `${v.slice(0, 3)}-${v.slice(3)}` : v;
   };
 
@@ -107,7 +121,7 @@ function RecoverySheet({ onClose }: { onClose: () => void }) {
     setErr('');
     try {
       const { session_id } = await resume.mutateAsync({
-        code:     code.replace(/-/g, ''),
+        code: code.replace(/-/g, ''),
         deviceId: getDeviceId(),
       });
       navigate(`/play/${session_id}`);
@@ -120,25 +134,24 @@ function RecoverySheet({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      <div className="relative w-full bg-surface rounded-t-2xl p-6 pb-[max(env(safe-area-inset-bottom),28px)]">
-        <div className="w-10 h-1 bg-border rounded-full mx-auto mb-6" />
-        <h2 className="text-[22px] font-bold text-white mb-1">{t('recovery.resumeTitle')}</h2>
-        <p className="text-sm text-text-muted mb-5">{t('recovery.resumeBody')}</p>
+      <div className="relative w-full rounded-t-2xl bg-surface p-6 pb-[max(env(safe-area-inset-bottom),28px)]">
+        <div className="mx-auto mb-6 h-1 w-10 rounded-full bg-border" />
+        <h2 className="mb-1 text-[22px] font-bold text-white">{t('recovery.resumeTitle')}</h2>
+        <p className="mb-5 text-sm text-text-muted">{t('recovery.resumeBody')}</p>
         <TextInput
           value={code}
-          onChange={(e) => { setCode(formatCode(e.target.value)); setErr(''); }}
+          onChange={(e) => {
+            setCode(formatCode(e.target.value));
+            setErr('');
+          }}
           placeholder="XKP-4R7"
           inputMode="text"
           autoCapitalize="characters"
           autoComplete="off"
-          className="tracking-[0.2em] text-center font-mono"
+          className="text-center font-mono tracking-[0.2em]"
         />
-        {err && <p className="text-sm text-danger mt-2">{err}</p>}
-        <Button
-          className="mt-4"
-          disabled={!canSubmit}
-          onClick={() => void handleResume()}
-        >
+        {err && <p className="mt-2 text-sm text-danger">{err}</p>}
+        <Button className="mt-4" disabled={!canSubmit} onClick={() => void handleResume()}>
           {resume.isPending ? '…' : t('recovery.resumeBtn')}
         </Button>
       </div>
@@ -152,35 +165,57 @@ export default function WelcomeScreen() {
   const { t } = useTranslation('common');
   const navigate = useNavigate();
   const { slug = 'faust-quest' } = useParams<{ slug?: string }>();
-  const [showTeamSheet, setShowTeamSheet]         = useState(false);
+  const [showTeamSheet, setShowTeamSheet] = useState(false);
   const [showRecoverySheet, setShowRecoverySheet] = useState(false);
+  const [lang, setLang] = useState<Lang>(getPreferredLang);
 
-  const lang = getPreferredLang();
+  const handleLangChange = (l: Lang) => {
+    setLang(l);
+    void i18n.changeLanguage(l);
+    localStorage.setItem('tt:lang', l);
+  };
+
   const { data: quest, isLoading } = useQuestBySlug(slug);
 
   const questTitle = getLocalizedString(quest?.title, lang);
-  const introText  = getLocalizedString(quest?.intro, lang);
+  const introText = getLocalizedString(quest?.intro, lang);
 
   return (
     <>
       <Screen>
-        {/* Back to quest list */}
-        <div className="flex-shrink-0 px-2 pt-[max(env(safe-area-inset-top),10px)]">
+        {/* Back to quest list + language switcher */}
+        <div className="flex flex-shrink-0 items-center justify-between px-2 pt-[max(env(safe-area-inset-top),10px)]">
           <button
             onClick={() => navigate('/')}
-            className="w-11 h-11 grid place-items-center text-white/60 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-lg"
+            className="grid h-11 w-11 place-items-center rounded-lg text-white/60 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             aria-label={t('backToQuests')}
           >
             <svg width="10" height="18" viewBox="0 0 10 18" fill="none" aria-hidden="true">
-              <path d="M9 1L1 9L9 17" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              <path
+                d="M9 1L1 9L9 17"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           </button>
+          <div role="radiogroup" aria-label={t('chooseLanguage')} className="flex gap-1.5 pr-2">
+            {LANGS.map((l) => (
+              <Pill
+                key={l.code}
+                label={l.label}
+                active={lang === l.code}
+                onClick={() => handleLangChange(l.code)}
+              />
+            ))}
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto">
           {isLoading ? (
-            <div className="flex-1 flex items-center justify-center h-full">
-              <div className="w-6 h-6 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+            <div className="flex h-full flex-1 items-center justify-center">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-accent border-t-transparent" />
             </div>
           ) : (
             <>
@@ -188,17 +223,17 @@ export default function WelcomeScreen() {
                 initial={{ opacity: 0, y: 18 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.45, ease: 'easeOut' }}
-                className="flex flex-col items-center px-6 pt-8 pb-4 text-center"
+                className="flex flex-col items-center px-6 pb-4 pt-8 text-center"
               >
                 <QuestIcon />
 
                 {questTitle && (
-                  <p className="text-[12px] font-semibold text-accent tracking-[0.14em] uppercase mt-5 mb-2">
+                  <p className="mb-2 mt-5 text-[12px] font-semibold uppercase tracking-[0.14em] text-accent">
                     {questTitle}
                   </p>
                 )}
 
-                <h1 className="text-[28px] font-bold text-white leading-snug tracking-[-0.3px] mb-6">
+                <h1 className="mb-6 text-[28px] font-bold leading-snug tracking-[-0.3px] text-white">
                   {t('backstory', { ns: 'play', defaultValue: 'Backstory' })}
                 </h1>
               </motion.div>
@@ -208,12 +243,22 @@ export default function WelcomeScreen() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
-                  className="mx-4 bg-surface rounded-card p-5 mb-4"
+                  className="mx-4 mb-4 rounded-card bg-surface p-5"
                 >
-                  <svg width="24" height="18" viewBox="0 0 24 18" fill="none" className="mb-3 opacity-40" aria-hidden="true">
-                    <path d="M0 18V10.8C0 4.8 3.6 1.2 10.8 0l1.2 1.8C8.4 2.7 6.6 4.8 6 8.4H10.8V18H0zm13.2 0V10.8C13.2 4.8 16.8 1.2 24 0l1.2 1.8C21.6 2.7 19.8 4.8 19.2 8.4H24V18H13.2z" fill="#F5A623" />
+                  <svg
+                    width="24"
+                    height="18"
+                    viewBox="0 0 24 18"
+                    fill="none"
+                    className="mb-3 opacity-40"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M0 18V10.8C0 4.8 3.6 1.2 10.8 0l1.2 1.8C8.4 2.7 6.6 4.8 6 8.4H10.8V18H0zm13.2 0V10.8C13.2 4.8 16.8 1.2 24 0l1.2 1.8C21.6 2.7 19.8 4.8 19.2 8.4H24V18H13.2z"
+                      fill="#F5A623"
+                    />
                   </svg>
-                  <p className="text-[16px] text-text-body leading-relaxed tracking-[-0.1px] whitespace-pre-wrap">
+                  <p className="whitespace-pre-wrap text-[16px] leading-relaxed tracking-[-0.1px] text-text-body">
                     {introText}
                   </p>
                 </motion.div>
@@ -226,16 +271,16 @@ export default function WelcomeScreen() {
           <Button onClick={() => navigate(`/q/${slug}/setup`)}>
             {t('start', { ns: 'play', defaultValue: "Let's go!" })}
           </Button>
-          <div className="text-center mt-[18px] py-1.5 flex items-center justify-center gap-4">
+          <div className="mt-[18px] flex items-center justify-center gap-4 py-1.5 text-center">
             <button
-              className="min-h-[44px] px-2 text-sm text-text-muted focus-visible:outline-none focus-visible:underline"
+              className="min-h-[44px] px-2 text-sm text-text-muted focus-visible:underline focus-visible:outline-none"
               onClick={() => setShowTeamSheet(true)}
             >
               {t('haveTeamCode')}
             </button>
-            <span className="text-border select-none">·</span>
+            <span className="select-none text-border">·</span>
             <button
-              className="min-h-[44px] px-2 text-sm text-text-muted focus-visible:outline-none focus-visible:underline"
+              className="min-h-[44px] px-2 text-sm text-text-muted focus-visible:underline focus-visible:outline-none"
               onClick={() => setShowRecoverySheet(true)}
             >
               {t('recovery.resumeLink')}
@@ -244,8 +289,8 @@ export default function WelcomeScreen() {
         </BottomDock>
       </Screen>
 
-      {showTeamSheet    && <TeamCodeSheet    onClose={() => setShowTeamSheet(false)} />}
-      {showRecoverySheet && <RecoverySheet   onClose={() => setShowRecoverySheet(false)} />}
+      {showTeamSheet && <TeamCodeSheet onClose={() => setShowTeamSheet(false)} />}
+      {showRecoverySheet && <RecoverySheet onClose={() => setShowRecoverySheet(false)} />}
     </>
   );
 }

@@ -75,21 +75,26 @@ export function QRScanner({ open, onScan, onClose }: QRScannerProps) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-50 bg-black flex flex-col"
+          className="fixed inset-0 z-50 flex flex-col bg-black"
           role="dialog"
           aria-modal="true"
           aria-label={t('scanQR')}
         >
           {/* Close button */}
-          <div className="absolute top-0 inset-x-0 flex items-center justify-between px-4 pt-[max(env(safe-area-inset-top),16px)] pb-3 z-10">
+          <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-4 pb-3 pt-[max(env(safe-area-inset-top),16px)]">
             <span className="text-[15px] font-semibold text-white">{t('scanQR')}</span>
             <button
               onClick={onClose}
-              className="w-11 h-11 grid place-items-center text-white rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+              className="grid h-11 w-11 place-items-center rounded-full text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
               aria-label={t('close')}
             >
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-                <path d="M2 2L16 16M2 16L16 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                <path
+                  d="M2 2L16 16M2 16L16 2"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
               </svg>
             </button>
           </div>
@@ -97,35 +102,35 @@ export function QRScanner({ open, onScan, onClose }: QRScannerProps) {
           {/* Video */}
           <video
             ref={videoRef}
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 h-full w-full object-cover"
             playsInline
             muted
             aria-hidden="true"
           />
 
           {/* Viewfinder */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
             {/* Corner markers */}
-            <div className="relative w-56 h-56">
+            <div className="relative h-56 w-56">
               {(['top-left', 'top-right', 'bottom-left', 'bottom-right'] as const).map((corner) => (
                 <CornerMarker key={corner} corner={corner} />
               ))}
             </div>
-            <p className="text-white text-[14px] font-medium mt-5 px-8 text-center drop-shadow-lg">
+            <p className="mt-5 px-8 text-center text-[14px] font-medium text-white drop-shadow-lg">
               {loading ? t('openingCamera') : t('pointAtQR')}
             </p>
             {error && (
-              <p className="text-danger text-[13px] font-medium mt-2 px-8 text-center drop-shadow-lg">
+              <p className="mt-2 px-8 text-center text-[13px] font-medium text-danger drop-shadow-lg">
                 {error}
               </p>
             )}
           </div>
 
           {/* Manual entry fallback */}
-          <div className="absolute bottom-0 inset-x-0 pb-[max(env(safe-area-inset-bottom),28px)] pt-4 px-6 text-center">
+          <div className="absolute inset-x-0 bottom-0 px-6 pb-[max(env(safe-area-inset-bottom),28px)] pt-4 text-center">
             <button
               onClick={onClose}
-              className="text-[14px] text-white/70 underline underline-offset-2 focus-visible:outline-none focus-visible:text-white"
+              className="text-[14px] text-white/70 underline underline-offset-2 focus-visible:text-white focus-visible:outline-none"
             >
               {t('enterManually')}
             </button>
@@ -144,7 +149,7 @@ function CornerMarker({ corner }: { corner: Corner }) {
   return (
     <div
       className={[
-        'absolute w-8 h-8',
+        'absolute h-8 w-8',
         isTop ? 'top-0' : 'bottom-0',
         isLeft ? 'left-0' : 'right-0',
       ].join(' ')}
@@ -153,7 +158,7 @@ function CornerMarker({ corner }: { corner: Corner }) {
       {/* Horizontal arm */}
       <div
         className={[
-          'absolute h-[3px] w-7 bg-accent rounded-full',
+          'absolute h-[3px] w-7 rounded-full bg-accent',
           isTop ? 'top-0' : 'bottom-0',
           isLeft ? 'left-0' : 'right-0',
         ].join(' ')}
@@ -161,7 +166,7 @@ function CornerMarker({ corner }: { corner: Corner }) {
       {/* Vertical arm */}
       <div
         className={[
-          'absolute w-[3px] h-7 bg-accent rounded-full',
+          'absolute h-7 w-[3px] rounded-full bg-accent',
           isTop ? 'top-0' : 'bottom-0',
           isLeft ? 'left-0' : 'right-0',
         ].join(' ')}

@@ -66,10 +66,7 @@ describeIfAdmin('07 — admin ops (reset / skip / delete)', () => {
     const sid = (data as { session_id: string }).session_id;
 
     const admin = getAdminClient();
-    const { error } = await admin
-      .from('sessions')
-      .update({ current_clue: 1 })
-      .eq('id', sid);
+    const { error } = await admin.from('sessions').update({ current_clue: 1 }).eq('id', sid);
     expect(error).toBeNull();
 
     const { data: s } = await supabase.rpc('get_session', { p_session_id: sid });

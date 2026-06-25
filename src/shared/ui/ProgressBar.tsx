@@ -5,11 +5,14 @@ interface ProgressBarProps {
 export function ProgressBar({ value }: ProgressBarProps) {
   const pct = Math.min(Math.max(value, 0), 1) * 100;
   return (
-    <div className="flex-shrink-0 h-[3px] bg-border" role="progressbar" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}>
-      <div
-        className="h-full bg-accent transition-all duration-500"
-        style={{ width: `${pct}%` }}
-      />
+    <div
+      className="h-[3px] flex-shrink-0 bg-border"
+      role="progressbar"
+      aria-valuenow={Math.round(pct)}
+      aria-valuemin={0}
+      aria-valuemax={100}
+    >
+      <div className="h-full bg-accent transition-all duration-500" style={{ width: `${pct}%` }} />
     </div>
   );
 }

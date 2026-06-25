@@ -7,16 +7,14 @@ interface TextInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 
 export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
   ({ error = false, rightAdornment, className = '', ...props }, ref) => {
-    const borderClass = error
-      ? 'border-danger'
-      : 'border-border-input focus:border-accent';
+    const borderClass = error ? 'border-danger' : 'border-border-input focus:border-accent';
 
     return (
       <div className="relative">
         <input
           ref={ref}
           className={[
-            'w-full h-input bg-surface rounded-input px-4 text-white text-[17px]',
+            'h-input w-full rounded-input bg-surface px-4 text-[17px] text-white',
             'border-[1.5px] transition-colors',
             'placeholder:text-text-muted',
             'focus:outline-none',
@@ -28,7 +26,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           {...props}
         />
         {rightAdornment && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+          <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
             {rightAdornment}
           </div>
         )}

@@ -1,12 +1,7 @@
 import { useDeferredValue, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import {
-  usePlayers,
-  useAdminQuests,
-  useDeletePlayer,
-  type PlayerRow,
-} from '@/shared/lib/queries';
+import { usePlayers, useAdminQuests, useDeletePlayer, type PlayerRow } from '@/shared/lib/queries';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -26,7 +21,7 @@ function formatElapsed(start: Date): string {
 function StatusBadge({ row }: { row: PlayerRow }) {
   if (row.isFinished) {
     return (
-      <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-adm-publishedBg text-adm-publishedFg">
+      <span className="inline-flex items-center gap-1 rounded-full bg-adm-publishedBg px-2 py-0.5 text-[11px] font-semibold text-adm-publishedFg">
         Finished
       </span>
     );
@@ -36,21 +31,21 @@ function StatusBadge({ row }: { row: PlayerRow }) {
   const isActive = Date.now() - row.lastActiveAt.getTime() < 10 * 60 * 1000;
   if (isActive) {
     return (
-      <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">
-        <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-livepulse" />
+      <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-700">
+        <span className="h-1.5 w-1.5 animate-livepulse rounded-full bg-blue-500" />
         Active
       </span>
     );
   }
   if (progress > 0) {
     return (
-      <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-adm-draftBg text-adm-draftFg">
+      <span className="inline-flex items-center gap-1 rounded-full bg-adm-draftBg px-2 py-0.5 text-[11px] font-semibold text-adm-draftFg">
         In progress
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-adm-sidebar text-adm-muted">
+    <span className="inline-flex items-center gap-1 rounded-full bg-adm-sidebar px-2 py-0.5 text-[11px] font-semibold text-adm-muted">
       Idle
     </span>
   );
@@ -71,7 +66,7 @@ function PlayerTableRow({
   const displayName = row.teamName ?? row.nickname;
 
   return (
-    <tr className="border-b border-adm-border hover:bg-adm-sidebar/40 transition-colors">
+    <tr className="border-b border-adm-border transition-colors hover:bg-adm-sidebar/40">
       {/* Name */}
       <td className="px-4 py-3">
         <div className="text-[14px] font-medium text-adm-text">{displayName}</div>
@@ -86,7 +81,7 @@ function PlayerTableRow({
       <td className="px-4 py-3">
         <button
           onClick={onGoToLive}
-          className="text-[13px] text-accent hover:underline font-medium"
+          className="text-[13px] font-medium text-accent hover:underline"
         >
           {questTitle}
         </button>
@@ -101,9 +96,9 @@ function PlayerTableRow({
       <td className="px-4 py-3">
         {row.totalClues > 0 ? (
           <div className="flex items-center gap-2">
-            <div className="w-[60px] h-1.5 bg-adm-border rounded-full overflow-hidden">
+            <div className="h-1.5 w-[60px] overflow-hidden rounded-full bg-adm-border">
               <div
-                className="h-full bg-accent rounded-full"
+                className="h-full rounded-full bg-accent"
                 style={{ width: `${Math.round((row.currentClue / row.totalClues) * 100)}%` }}
               />
             </div>
@@ -117,22 +112,18 @@ function PlayerTableRow({
       </td>
 
       {/* Attempts */}
-      <td className="px-4 py-3 text-[13px] text-adm-text text-right">
-        {row.totalAttempts}
-      </td>
+      <td className="px-4 py-3 text-right text-[13px] text-adm-text">{row.totalAttempts}</td>
 
       {/* Lang */}
-      <td className="px-4 py-3 text-[12px] text-adm-muted uppercase">{row.lang}</td>
+      <td className="px-4 py-3 text-[12px] uppercase text-adm-muted">{row.lang}</td>
 
       {/* Started */}
-      <td className="px-4 py-3 text-[12px] text-adm-muted">
-        {formatDate(row.startedAt)}
-      </td>
+      <td className="px-4 py-3 text-[12px] text-adm-muted">{formatDate(row.startedAt)}</td>
 
       {/* Last active */}
       <td className="px-4 py-3 text-[12px] text-adm-muted">
         {row.isFinished ? (
-          <span className="text-success font-medium">Finished</span>
+          <span className="font-medium text-success">Finished</span>
         ) : (
           formatElapsed(row.lastActiveAt)
         )}
@@ -142,7 +133,7 @@ function PlayerTableRow({
       <td className="px-4 py-3">
         <button
           onClick={onDelete}
-          className="h-[26px] px-2.5 rounded-lg border border-danger/30 text-danger text-[12px] font-medium hover:bg-danger/8 transition-colors"
+          className="hover:bg-danger/8 h-[26px] rounded-lg border border-danger/30 px-2.5 text-[12px] font-medium text-danger transition-colors"
         >
           Delete
         </button>
@@ -164,18 +155,18 @@ function ConfirmDialog({
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-      <div className="bg-adm-bg rounded-2xl shadow-2xl p-6 max-w-[360px] w-full mx-4">
-        <p className="text-[15px] text-adm-text mb-5 leading-relaxed">{message}</p>
+      <div className="mx-4 w-full max-w-[360px] rounded-2xl bg-adm-bg p-6 shadow-2xl">
+        <p className="mb-5 text-[15px] leading-relaxed text-adm-text">{message}</p>
         <div className="flex gap-3">
           <button
             onClick={onCancel}
-            className="flex-1 h-[38px] rounded-btn border border-adm-border text-adm-muted text-[13px] font-medium hover:bg-adm-border/60 transition-colors"
+            className="h-[38px] flex-1 rounded-btn border border-adm-border text-[13px] font-medium text-adm-muted transition-colors hover:bg-adm-border/60"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 h-[38px] rounded-btn bg-danger text-white text-[13px] font-semibold hover:opacity-90 transition-opacity"
+            className="h-[38px] flex-1 rounded-btn bg-danger text-[13px] font-semibold text-white transition-opacity hover:opacity-90"
           >
             Delete
           </button>
@@ -230,33 +221,48 @@ export default function PlayersPage() {
   ];
 
   const cols = [
-    'Name', 'Quest', 'Status', 'Progress', 'Attempts', 'Lang', 'Started', 'Last active', 'Actions',
+    'Name',
+    'Quest',
+    'Status',
+    'Progress',
+    'Attempts',
+    'Lang',
+    'Started',
+    'Last active',
+    'Actions',
   ];
 
   return (
     <>
       <div className="p-8">
-        <h1 className="text-[24px] font-bold text-adm-text mb-6">
-          {t('nav.players')}
-        </h1>
+        <h1 className="mb-6 text-[24px] font-bold text-adm-text">{t('nav.players')}</h1>
 
         {/* Filters */}
-        <div className="flex flex-wrap items-center gap-3 mb-5">
+        <div className="mb-5 flex flex-wrap items-center gap-3">
           {/* Search */}
           <div className="relative">
             <svg
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-adm-muted pointer-events-none"
-              width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-adm-muted"
+              width="14"
+              height="14"
+              viewBox="0 0 16 16"
+              fill="none"
+              aria-hidden="true"
             >
               <circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.5" />
-              <path d="M10.5 10.5L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <path
+                d="M10.5 10.5L14 14"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
             </svg>
             <input
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name or quest…"
-              className="h-[36px] pl-9 pr-3 w-[240px] rounded-lg border border-adm-border bg-adm-bg text-adm-text text-[13px] outline-none focus:border-accent transition-colors placeholder:text-adm-placeholder"
+              className="h-[36px] w-[240px] rounded-lg border border-adm-border bg-adm-bg pl-9 pr-3 text-[13px] text-adm-text outline-none transition-colors placeholder:text-adm-placeholder focus:border-accent"
             />
           </div>
 
@@ -264,7 +270,7 @@ export default function PlayersPage() {
           <select
             value={questFilter}
             onChange={(e) => setQuestFilter(e.target.value)}
-            className="h-[36px] px-3 rounded-lg border border-adm-border bg-adm-bg text-adm-text text-[13px] outline-none focus:border-accent transition-colors"
+            className="h-[36px] rounded-lg border border-adm-border bg-adm-bg px-3 text-[13px] text-adm-text outline-none transition-colors focus:border-accent"
           >
             <option value="">All quests</option>
             {quests.map((q) => (
@@ -275,16 +281,16 @@ export default function PlayersPage() {
           </select>
 
           {/* Status pills */}
-          <div className="flex gap-1.5 ml-auto">
+          <div className="ml-auto flex gap-1.5">
             {statusOptions.map(({ key, label }) => (
               <button
                 key={key}
                 onClick={() => setStatusFilter(key)}
                 className={[
-                  'h-[32px] px-3.5 rounded-full text-[12px] font-medium transition-colors',
+                  'h-[32px] rounded-full px-3.5 text-[12px] font-medium transition-colors',
                   statusFilter === key
                     ? 'bg-accent text-bg'
-                    : 'bg-adm-sidebar text-adm-muted border border-adm-border hover:text-adm-text',
+                    : 'border border-adm-border bg-adm-sidebar text-adm-muted hover:text-adm-text',
                 ].join(' ')}
               >
                 {label}
@@ -294,14 +300,14 @@ export default function PlayersPage() {
         </div>
 
         {/* Table */}
-        <div className="border border-adm-border rounded-xl overflow-auto">
-          <table className="w-full border-collapse min-w-[900px]">
+        <div className="overflow-auto rounded-xl border border-adm-border">
+          <table className="w-full min-w-[900px] border-collapse">
             <thead>
-              <tr className="bg-adm-sidebar border-b border-adm-border">
+              <tr className="border-b border-adm-border bg-adm-sidebar">
                 {cols.map((col) => (
                   <th
                     key={col}
-                    className="px-4 py-2.5 text-left text-[11px] font-semibold text-adm-muted uppercase tracking-wider whitespace-nowrap"
+                    className="whitespace-nowrap px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-adm-muted"
                   >
                     {col}
                   </th>
@@ -314,7 +320,7 @@ export default function PlayersPage() {
                   <tr key={i} className="border-b border-adm-border">
                     {cols.map((c) => (
                       <td key={c} className="px-4 py-3">
-                        <div className="h-4 bg-adm-border rounded animate-pulse" />
+                        <div className="h-4 animate-pulse rounded bg-adm-border" />
                       </td>
                     ))}
                   </tr>
@@ -332,13 +338,13 @@ export default function PlayersPage() {
           </table>
 
           {!isLoading && filtered.length === 0 && (
-            <p className="text-center text-adm-muted text-[14px] py-10">
+            <p className="py-10 text-center text-[14px] text-adm-muted">
               {players.length === 0 ? 'No sessions yet.' : 'No results matching filters.'}
             </p>
           )}
         </div>
 
-        <p className="text-[12px] text-adm-muted mt-3">
+        <p className="mt-3 text-[12px] text-adm-muted">
           Showing {filtered.length} of {players.length} sessions (test sessions excluded).
         </p>
       </div>

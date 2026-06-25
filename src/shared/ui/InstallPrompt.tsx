@@ -18,7 +18,8 @@ export function InstallPrompt() {
     if (
       localStorage.getItem(DISMISSED_KEY) ||
       window.matchMedia('(display-mode: standalone)').matches
-    ) return;
+    )
+      return;
 
     const handler = (e: Event) => {
       e.preventDefault();
@@ -45,29 +46,34 @@ export function InstallPrompt() {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-[max(env(safe-area-inset-bottom),16px)] left-4 right-4 z-50 pointer-events-none">
-      <div className="bg-surface-raised border border-border rounded-2xl px-4 py-3.5 flex items-center gap-3 shadow-xl pointer-events-auto">
+    <div className="pointer-events-none fixed bottom-[max(env(safe-area-inset-bottom),16px)] left-4 right-4 z-50">
+      <div className="pointer-events-auto flex items-center gap-3 rounded-2xl border border-border bg-surface-raised px-4 py-3.5 shadow-xl">
         {/* Icon */}
-        <img src="/pwa-192x192.png" alt="" className="w-10 h-10 rounded-xl flex-shrink-0" />
+        <img src="/pwa-192x192.png" alt="" className="h-10 w-10 flex-shrink-0 rounded-xl" />
 
-        <div className="flex-1 min-w-0">
-          <p className="text-[14px] font-semibold text-white leading-tight">{t('install.title')}</p>
-          <p className="text-[12px] text-text-muted leading-tight mt-0.5">{t('install.desc')}</p>
+        <div className="min-w-0 flex-1">
+          <p className="text-[14px] font-semibold leading-tight text-white">{t('install.title')}</p>
+          <p className="mt-0.5 text-[12px] leading-tight text-text-muted">{t('install.desc')}</p>
         </div>
 
         <button
           onClick={() => void handleInstall()}
-          className="flex-shrink-0 h-8 px-3 rounded-lg bg-accent text-bg text-[13px] font-semibold"
+          className="h-8 flex-shrink-0 rounded-lg bg-accent px-3 text-[13px] font-semibold text-bg"
         >
           {t('install.add')}
         </button>
         <button
           onClick={handleDismiss}
-          className="flex-shrink-0 w-7 h-7 flex items-center justify-center text-text-muted hover:text-white"
+          className="flex h-7 w-7 flex-shrink-0 items-center justify-center text-text-muted hover:text-white"
           aria-label="Dismiss"
         >
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            <path
+              d="M1 1l10 10M11 1L1 11"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
           </svg>
         </button>
       </div>

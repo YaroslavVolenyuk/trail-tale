@@ -11,9 +11,7 @@ interface ScreenProps {
  */
 export function Screen({ children, className = '' }: ScreenProps) {
   return (
-    <div
-      className={`min-h-dvh flex flex-col bg-bg font-sans overflow-hidden ${className}`}
-    >
+    <div className={`flex min-h-dvh flex-col overflow-hidden bg-bg font-sans ${className}`}>
       {/* iOS status-bar spacer */}
       <div className="h-[59px] flex-shrink-0" aria-hidden="true" />
       {children}

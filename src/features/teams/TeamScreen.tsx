@@ -21,11 +21,11 @@ function ShareCodeModal({ code, onContinue }: { code: string; onContinue: () => 
   return (
     <div className="fixed inset-0 z-50 flex items-end">
       <div className="absolute inset-0 bg-black/60" />
-      <div className="relative w-full bg-surface rounded-t-2xl p-6 pb-[max(env(safe-area-inset-bottom),28px)]">
-        <div className="w-10 h-1 bg-border rounded-full mx-auto mb-6" />
-        <p className="text-text-muted text-sm text-center mb-3">{t('shareThisCode')}</p>
-        <div className="bg-bg rounded-card py-5 text-center mb-5">
-          <span className="text-[40px] font-bold text-white tracking-[0.2em]">{code}</span>
+      <div className="relative w-full rounded-t-2xl bg-surface p-6 pb-[max(env(safe-area-inset-bottom),28px)]">
+        <div className="mx-auto mb-6 h-1 w-10 rounded-full bg-border" />
+        <p className="mb-3 text-center text-sm text-text-muted">{t('shareThisCode')}</p>
+        <div className="mb-5 rounded-card bg-bg py-5 text-center">
+          <span className="text-[40px] font-bold tracking-[0.2em] text-white">{code}</span>
         </div>
         <Button variant="secondary" className="mb-3" onClick={handleCopy}>
           {copied ? '✓ ' + t('copied') : t('copyCode')}
@@ -51,7 +51,10 @@ export default function TeamScreen() {
   const joinTeam = useJoinTeam();
 
   const formatCode = (raw: string) => {
-    const v = raw.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5);
+    const v = raw
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '')
+      .slice(0, 5);
     return v.length > 3 ? `${v.slice(0, 3)}-${v.slice(3)}` : v;
   };
 
@@ -100,11 +103,9 @@ export default function TeamScreen() {
             autoComplete="off"
             maxLength={30}
           />
-          <p className="text-[13px] text-text-muted mt-2 mb-5 leading-snug">
-            {t('teamCodeHint')}
-          </p>
+          <p className="mb-5 mt-2 text-[13px] leading-snug text-text-muted">{t('teamCodeHint')}</p>
           {createTeam.error && (
-            <p className="text-[13px] text-danger mb-3" role="alert">
+            <p className="mb-3 text-[13px] text-danger" role="alert">
               {String(createTeam.error)}
             </p>
           )}
@@ -116,10 +117,10 @@ export default function TeamScreen() {
           </Button>
 
           {/* Divider */}
-          <div className="flex items-center gap-3 my-7">
-            <div className="flex-1 h-px bg-border" />
+          <div className="my-7 flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" />
             <span className="text-[13px] text-text-muted">{t('or')}</span>
-            <div className="flex-1 h-px bg-border" />
+            <div className="h-px flex-1 bg-border" />
           </div>
 
           {/* Join section */}
@@ -138,7 +139,9 @@ export default function TeamScreen() {
             error={!!joinError}
           />
           {joinError && (
-            <p className="text-[13px] text-danger mt-2" role="alert">{joinError}</p>
+            <p className="mt-2 text-[13px] text-danger" role="alert">
+              {joinError}
+            </p>
           )}
           <div className="h-4" />
           <Button

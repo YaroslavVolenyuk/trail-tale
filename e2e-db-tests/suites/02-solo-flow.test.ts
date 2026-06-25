@@ -47,7 +47,11 @@ describe('02 — solo flow (end-to-end run)', () => {
       p_session_id: sessionId,
     });
     expect(error).toBeNull();
-    const s = data as { current_clue: number; clue: { id: string; order: number }; total_clues: number };
+    const s = data as {
+      current_clue: number;
+      clue: { id: string; order: number };
+      total_clues: number;
+    };
     expect(s.current_clue).toBe(0);
     expect(s.total_clues).toBe(3);
     expect(s.clue.order).toBe(0);
@@ -99,7 +103,7 @@ describe('02 — solo flow (end-to-end run)', () => {
       p_code: 'GHI',
       p_device_id: dev,
     });
-    expect((data as { correct: boolean; finished: boolean })).toEqual({
+    expect(data as { correct: boolean; finished: boolean }).toEqual({
       correct: true,
       finished: true,
     });

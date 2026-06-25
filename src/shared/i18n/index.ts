@@ -32,7 +32,7 @@ void i18n
     detection: {
       order: ['localStorage', 'navigator'],
       lookupLocalStorage: 'tt:lang',
-      caches: [],   // we write to tt:lang manually so admin & game don't share cache
+      caches: [], // we write to tt:lang manually so admin & game don't share cache
     },
   });
 

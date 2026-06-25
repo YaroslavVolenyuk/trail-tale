@@ -9,11 +9,9 @@ export function Pill({ active = false, label, className = '', ...props }: PillPr
       role="radio"
       aria-checked={active}
       className={[
-        'flex-1 h-10 rounded-full text-[14px] font-medium transition-colors cursor-pointer',
+        'h-10 flex-1 cursor-pointer rounded-full text-[14px] font-medium transition-colors',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
-        active
-          ? 'bg-accent text-bg'
-          : 'bg-surface text-text-muted',
+        active ? 'bg-accent text-bg' : 'bg-surface text-text-muted',
         className,
       ].join(' ')}
       {...props}

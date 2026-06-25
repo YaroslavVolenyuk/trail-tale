@@ -56,7 +56,7 @@ describe('03 — team flow (shared session across members)', () => {
     expect(leaderSession).toBeTruthy();
   });
 
-  it('join_team_by_code returns the leader\'s session', async () => {
+  it("join_team_by_code returns the leader's session", async () => {
     const { data, error } = await supabase.rpc('join_team_by_code', {
       p_code: joinCode,
       p_nickname: 'Joiner',

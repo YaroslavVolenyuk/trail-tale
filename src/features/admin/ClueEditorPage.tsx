@@ -33,7 +33,12 @@ type ClueForm = z.infer<typeof clueSchema>;
 function IconEyeOff() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path d="M2 2l12 12M6.5 6.6A2 2 0 0 0 9.4 9.5M4 4.2C2.3 5.3 1 7 1 7s2.5 5 7 5c1.4 0 2.6-.4 3.7-1M7 3c.3 0 .7 0 1 .1C12 3.7 15 7 15 7s-.7 1.3-1.8 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path
+        d="M2 2l12 12M6.5 6.6A2 2 0 0 0 9.4 9.5M4 4.2C2.3 5.3 1 7 1 7s2.5 5 7 5c1.4 0 2.6-.4 3.7-1M7 3c.3 0 .7 0 1 .1C12 3.7 15 7 15 7s-.7 1.3-1.8 2.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -41,7 +46,11 @@ function IconEyeOff() {
 function IconMap() {
   return (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-      <path d="M7 1C4.79 1 3 2.79 3 5c0 3.25 4 8 4 8s4-4.75 4-8c0-2.21-1.79-4-4-4Z" stroke="currentColor" strokeWidth="1.3" />
+      <path
+        d="M7 1C4.79 1 3 2.79 3 5c0 3.25 4 8 4 8s4-4.75 4-8c0-2.21-1.79-4-4-4Z"
+        stroke="currentColor"
+        strokeWidth="1.3"
+      />
       <circle cx="7" cy="5" r="1.5" stroke="currentColor" strokeWidth="1.3" />
     </svg>
   );
@@ -52,7 +61,13 @@ function IconImage() {
     <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
       <rect x="3" y="5" width="22" height="18" rx="3" stroke="currentColor" strokeWidth="1.5" />
       <circle cx="10" cy="11" r="2" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M3 19l5-5 4 4 4-5 6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M3 19l5-5 4 4 4-5 6 6"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
@@ -60,7 +75,12 @@ function IconImage() {
 function IconTrash() {
   return (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-      <path d="M2 3.5h10M5 3.5V2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v1M5.5 6v4M8.5 6v4M3 3.5l.5 8a.5.5 0 0 0 .5.5h6a.5.5 0 0 0 .5-.5l.5-8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+      <path
+        d="M2 3.5h10M5 3.5V2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v1M5.5 6v4M8.5 6v4M3 3.5l.5 8a.5.5 0 0 0 .5.5h6a.5.5 0 0 0 .5-.5l.5-8"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -84,12 +104,21 @@ async function toWebp(file: File, maxPx = 1280): Promise<Blob> {
       if (!ctx) return reject(new Error('Canvas context unavailable'));
       ctx.drawImage(img, 0, 0, w, h);
       canvas.toBlob(
-        (blob) => { if (blob) { resolve(blob); } else { reject(new Error('Canvas toBlob failed')); } },
+        (blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error('Canvas toBlob failed'));
+          }
+        },
         'image/webp',
         0.85,
       );
     };
-    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Image load failed')); };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Image load failed'));
+    };
     img.src = url;
   });
 }
@@ -112,29 +141,32 @@ function MediaUpload({ questId, clueId, currentUrl, onUploaded, onRemoved }: Med
   const getPublicUrl = (path: string) =>
     supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
 
-  const processFile = useCallback(async (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      setUploadError('Only image files are accepted');
-      return;
-    }
-    setUploading(true);
-    setUploadError(null);
-    try {
-      const webp = await toWebp(file);
-      // Use clueId if available, else a temp uuid so the path is stable
-      const suffix = clueId ?? crypto.randomUUID();
-      const path = `${questId}/${suffix}.webp`;
-      const { error } = await supabase.storage
-        .from(BUCKET)
-        .upload(path, webp, { upsert: true, contentType: 'image/webp' });
-      if (error) throw error;
-      onUploaded(path);
-    } catch (e) {
-      setUploadError(e instanceof Error ? e.message : 'Upload failed');
-    } finally {
-      setUploading(false);
-    }
-  }, [questId, clueId, onUploaded]);
+  const processFile = useCallback(
+    async (file: File) => {
+      if (!file.type.startsWith('image/')) {
+        setUploadError('Only image files are accepted');
+        return;
+      }
+      setUploading(true);
+      setUploadError(null);
+      try {
+        const webp = await toWebp(file);
+        // Use clueId if available, else a temp uuid so the path is stable
+        const suffix = clueId ?? crypto.randomUUID();
+        const path = `${questId}/${suffix}.webp`;
+        const { error } = await supabase.storage
+          .from(BUCKET)
+          .upload(path, webp, { upsert: true, contentType: 'image/webp' });
+        if (error) throw error;
+        onUploaded(path);
+      } catch (e) {
+        setUploadError(e instanceof Error ? e.message : 'Upload failed');
+      } finally {
+        setUploading(false);
+      }
+    },
+    [questId, clueId, onUploaded],
+  );
 
   const handleFiles = (files: FileList | null) => {
     if (files?.[0]) void processFile(files[0]);
@@ -142,16 +174,16 @@ function MediaUpload({ questId, clueId, currentUrl, onUploaded, onRemoved }: Med
 
   if (currentUrl) {
     return (
-      <div className="relative rounded-xl overflow-hidden border border-adm-border">
+      <div className="relative overflow-hidden rounded-xl border border-adm-border">
         <img
           src={getPublicUrl(currentUrl)}
           alt="Clue media"
-          className="w-full h-[160px] object-cover"
+          className="h-[160px] w-full object-cover"
         />
         <button
           type="button"
           onClick={onRemoved}
-          className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/90 flex items-center justify-center text-adm-text hover:bg-white transition-colors shadow"
+          className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-adm-text shadow transition-colors hover:bg-white"
           aria-label="Remove image"
         >
           <IconTrash />
@@ -165,9 +197,14 @@ function MediaUpload({ questId, clueId, currentUrl, onUploaded, onRemoved }: Med
       <div
         role="button"
         tabIndex={0}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click(); }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click();
+        }}
         onClick={() => fileInputRef.current?.click()}
-        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragOver(true);
+        }}
         onDragLeave={() => setDragOver(false)}
         onDrop={(e) => {
           e.preventDefault();
@@ -175,25 +212,23 @@ function MediaUpload({ questId, clueId, currentUrl, onUploaded, onRemoved }: Med
           handleFiles(e.dataTransfer.files);
         }}
         className={[
-          'border-2 border-dashed rounded-xl p-6 flex flex-col items-center gap-2 transition-colors cursor-pointer',
+          'flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed p-6 transition-colors',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
-          dragOver ? 'border-accent text-accent bg-accent/5' : 'border-adm-border text-adm-muted hover:border-accent hover:text-accent',
+          dragOver
+            ? 'border-accent bg-accent/5 text-accent'
+            : 'border-adm-border text-adm-muted hover:border-accent hover:text-accent',
           uploading ? 'pointer-events-none opacity-60' : '',
         ].join(' ')}
         aria-label={t('dropMedia')}
       >
         {uploading ? (
-          <div className="w-6 h-6 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-accent border-t-transparent" />
         ) : (
           <IconImage />
         )}
-        <p className="text-[12px] text-center">
-          {uploading ? t('uploading') : t('dropMedia')}
-        </p>
+        <p className="text-center text-[12px]">{uploading ? t('uploading') : t('dropMedia')}</p>
       </div>
-      {uploadError && (
-        <p className="text-[12px] text-danger mt-1">{uploadError}</p>
-      )}
+      {uploadError && <p className="mt-1 text-[12px] text-danger">{uploadError}</p>}
       <input
         ref={fileInputRef}
         type="file"
@@ -219,11 +254,11 @@ function FormField({
 }) {
   return (
     <div>
-      <label className="block text-[12px] font-semibold text-adm-muted uppercase tracking-wider mb-1.5">
+      <label className="mb-1.5 block text-[12px] font-semibold uppercase tracking-wider text-adm-muted">
         {label}
       </label>
       {children}
-      {error && <p className="text-[12px] text-danger mt-1">{error}</p>}
+      {error && <p className="mt-1 text-[12px] text-danger">{error}</p>}
     </div>
   );
 }
@@ -248,7 +283,11 @@ async function openPrintQR({
   questTitle: string;
 }) {
   if (!code.trim()) return;
-  const dataUrl = await QRCode.toDataURL(code, { width: 400, margin: 2, color: { dark: '#000000', light: '#ffffff' } });
+  const dataUrl = await QRCode.toDataURL(code, {
+    width: 400,
+    margin: 2,
+    color: { dark: '#000000', light: '#ffffff' },
+  });
 
   const win = window.open('', '_blank', 'width=600,height=700');
   if (!win) return;
@@ -325,30 +364,31 @@ export default function ClueEditorPage() {
   } = useForm<ClueForm>({
     resolver: zodResolver(clueSchema),
     // `values` re-syncs the form when clue loads (won't override dirty fields)
-    values: clue && quest
-      ? {
-          title: {
-            uk: (clue.title['uk'] ?? '') as string,
-            en: (clue.title['en'] ?? '') as string,
-            de: (clue.title['de'] ?? '') as string,
-          },
-          text: {
-            uk: (clue.content['uk'] ?? '') as string,
-            en: (clue.content['en'] ?? '') as string,
-            de: (clue.content['de'] ?? '') as string,
-          },
-          hint: {
-            uk: (clue.hint?.['uk'] ?? '') as string,
-            en: (clue.hint?.['en'] ?? '') as string,
-            de: (clue.hint?.['de'] ?? '') as string,
-          },
-          code: clue.code,
-          locationName: clue.location_name ?? '',
-          lat: clue.lat,
-          lng: clue.lng,
-          attemptsBeforeHint: quest.attempts_before_hint,
-        }
-      : undefined,
+    values:
+      clue && quest
+        ? {
+            title: {
+              uk: (clue.title['uk'] ?? '') as string,
+              en: (clue.title['en'] ?? '') as string,
+              de: (clue.title['de'] ?? '') as string,
+            },
+            text: {
+              uk: (clue.content['uk'] ?? '') as string,
+              en: (clue.content['en'] ?? '') as string,
+              de: (clue.content['de'] ?? '') as string,
+            },
+            hint: {
+              uk: (clue.hint?.['uk'] ?? '') as string,
+              en: (clue.hint?.['en'] ?? '') as string,
+              de: (clue.hint?.['de'] ?? '') as string,
+            },
+            code: clue.code,
+            locationName: clue.location_name ?? '',
+            lat: clue.lat,
+            lng: clue.lng,
+            attemptsBeforeHint: quest.attempts_before_hint,
+          }
+        : undefined,
     defaultValues: {
       title: { uk: '', en: '', de: '' },
       text: { uk: '', en: '', de: '' },
@@ -403,16 +443,16 @@ export default function ClueEditorPage() {
   if (isLoading) {
     return (
       <div className="p-8">
-        <div className="h-5 w-48 bg-adm-border rounded animate-pulse mb-6" />
+        <div className="mb-6 h-5 w-48 animate-pulse rounded bg-adm-border" />
         <div className="flex gap-6">
           <div className="flex-[6] space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-[80px] bg-adm-border rounded-lg animate-pulse" />
+              <div key={i} className="h-[80px] animate-pulse rounded-lg bg-adm-border" />
             ))}
           </div>
           <div className="flex-[4] space-y-4">
             {[1, 2].map((i) => (
-              <div key={i} className="h-[140px] bg-adm-border rounded-xl animate-pulse" />
+              <div key={i} className="h-[140px] animate-pulse rounded-xl bg-adm-border" />
             ))}
           </div>
         </div>
@@ -431,29 +471,27 @@ export default function ClueEditorPage() {
   return (
     <div className="p-8">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-[13px] text-adm-muted mb-6">
-        <Link to="/admin/quests" className="hover:text-adm-text transition-colors">
+      <nav className="mb-6 flex items-center gap-2 text-[13px] text-adm-muted">
+        <Link to="/admin/quests" className="transition-colors hover:text-adm-text">
           {t('myQuests')}
         </Link>
         <span>›</span>
-        <Link to={`/admin/quests/${slug ?? ''}`} className="hover:text-adm-text transition-colors">
+        <Link to={`/admin/quests/${slug ?? ''}`} className="transition-colors hover:text-adm-text">
           {questTitle}
         </Link>
         <span>›</span>
-        <span className="text-adm-text font-medium">{clueTitle}</span>
+        <span className="font-medium text-adm-text">{clueTitle}</span>
       </nav>
 
       {/* Sticky action bar */}
-      <div className="flex items-center justify-between mb-6 pb-4 border-b border-adm-border sticky top-0 bg-adm-bg z-10 pt-1">
+      <div className="sticky top-0 z-10 mb-6 flex items-center justify-between border-b border-adm-border bg-adm-bg pb-4 pt-1">
         <h1 className="text-[18px] font-bold text-adm-text">{clueTitle}</h1>
         <div className="flex items-center gap-2">
-          {saveError && (
-            <p className="text-[12px] text-danger mr-2">{saveError}</p>
-          )}
+          {saveError && <p className="mr-2 text-[12px] text-danger">{saveError}</p>}
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="h-[36px] px-4 rounded-btn border border-adm-border text-adm-muted text-[13px] font-medium hover:bg-adm-border/60 transition-colors"
+            className="h-[36px] rounded-btn border border-adm-border px-4 text-[13px] font-medium text-adm-muted transition-colors hover:bg-adm-border/60"
           >
             {t('discard')}
           </button>
@@ -461,7 +499,7 @@ export default function ClueEditorPage() {
             type="button"
             onClick={() => void handleSubmit(onSubmit)()}
             disabled={!isDirty || isSaving}
-            className="h-[36px] px-4 rounded-btn bg-accent text-bg text-[13px] font-semibold disabled:opacity-40 hover:bg-amber-400 transition-colors"
+            className="h-[36px] rounded-btn bg-accent px-4 text-[13px] font-semibold text-bg transition-colors hover:bg-amber-400 disabled:opacity-40"
           >
             {isSaving ? '…' : t('saveChanges')}
           </button>
@@ -471,7 +509,7 @@ export default function ClueEditorPage() {
       {/* Two-column layout */}
       <div className="flex gap-6">
         {/* Left column — content (60%) */}
-        <div className="flex-[6] min-w-0 space-y-5">
+        <div className="min-w-0 flex-[6] space-y-5">
           {/* Language tabs */}
           <div className="flex border-b border-adm-border">
             {langKeys.map((l) => (
@@ -479,7 +517,7 @@ export default function ClueEditorPage() {
                 key={l}
                 onClick={() => setActiveLang(l)}
                 className={[
-                  'flex items-center gap-1.5 px-4 py-2.5 text-[13px] font-medium border-b-2 -mb-px transition-colors',
+                  '-mb-px flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-[13px] font-medium transition-colors',
                   activeLang === l
                     ? 'border-accent text-adm-text'
                     : 'border-transparent text-adm-muted hover:text-adm-text',
@@ -487,7 +525,10 @@ export default function ClueEditorPage() {
               >
                 {langLabels[l]}
                 {incomplete(l) && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" title="Incomplete" />
+                  <span
+                    className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-400"
+                    title="Incomplete"
+                  />
                 )}
               </button>
             ))}
@@ -513,13 +554,13 @@ export default function ClueEditorPage() {
           </FormField>
 
           {/* Hint */}
-          <div className="rounded-xl border border-adm-border overflow-hidden">
-            <div className="flex items-center px-4 py-2.5 bg-adm-sidebar border-b border-adm-border">
-              <span className="text-[12px] font-semibold text-adm-muted uppercase tracking-wider flex-1">
+          <div className="overflow-hidden rounded-xl border border-adm-border">
+            <div className="flex items-center border-b border-adm-border bg-adm-sidebar px-4 py-2.5">
+              <span className="flex-1 text-[12px] font-semibold uppercase tracking-wider text-adm-muted">
                 {t('hint')}
               </span>
             </div>
-            <div className="p-4 bg-amber-50/50">
+            <div className="bg-amber-50/50 p-4">
               <textarea
                 {...register(`hint.${activeLang}`)}
                 rows={2}
@@ -542,7 +583,7 @@ export default function ClueEditorPage() {
               <button
                 type="button"
                 onClick={() => setCodeVisible((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-adm-muted hover:text-adm-text transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-adm-muted transition-colors hover:text-adm-text"
                 aria-label={codeVisible ? 'Hide code' : 'Show code'}
               >
                 <IconEyeOff />
@@ -565,13 +606,41 @@ export default function ClueEditorPage() {
                 });
               }}
               disabled={!watch('code').trim()}
-              className="flex items-center gap-2 h-[36px] px-4 rounded-btn border border-adm-border text-adm-text text-[13px] font-medium hover:border-accent hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="flex h-[36px] items-center gap-2 rounded-btn border border-adm-border px-4 text-[13px] font-medium text-adm-text transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                <rect x="1" y="4" width="12" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
-                <path d="M3.5 4V2.5A.5.5 0 0 1 4 2h6a.5.5 0 0 1 .5.5V4" stroke="currentColor" strokeWidth="1.3" />
-                <rect x="3.5" y="7" width="7" height="4" rx=".5" fill="currentColor" opacity=".25" />
-                <rect x="3.5" y="7" width="7" height="4" rx=".5" stroke="currentColor" strokeWidth="1.3" />
+                <rect
+                  x="1"
+                  y="4"
+                  width="12"
+                  height="7"
+                  rx="1.5"
+                  stroke="currentColor"
+                  strokeWidth="1.3"
+                />
+                <path
+                  d="M3.5 4V2.5A.5.5 0 0 1 4 2h6a.5.5 0 0 1 .5.5V4"
+                  stroke="currentColor"
+                  strokeWidth="1.3"
+                />
+                <rect
+                  x="3.5"
+                  y="7"
+                  width="7"
+                  height="4"
+                  rx=".5"
+                  fill="currentColor"
+                  opacity=".25"
+                />
+                <rect
+                  x="3.5"
+                  y="7"
+                  width="7"
+                  height="4"
+                  rx=".5"
+                  stroke="currentColor"
+                  strokeWidth="1.3"
+                />
               </svg>
               Print QR
             </button>
@@ -580,10 +649,10 @@ export default function ClueEditorPage() {
         </div>
 
         {/* Right column — meta (40%) */}
-        <div className="flex-[4] min-w-0 space-y-4">
+        <div className="min-w-0 flex-[4] space-y-4">
           {/* Location card */}
           <div className="rounded-xl border border-adm-border bg-adm-sidebar p-4">
-            <p className="text-[12px] font-semibold text-adm-muted uppercase tracking-wider mb-3">
+            <p className="mb-3 text-[12px] font-semibold uppercase tracking-wider text-adm-muted">
               Location
             </p>
             <input
@@ -592,8 +661,8 @@ export default function ClueEditorPage() {
               className={[inputCls, 'mb-3'].join(' ')}
             />
             {/* Map placeholder */}
-            <div className="h-[120px] rounded-lg overflow-hidden relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-100 to-teal-200 flex items-center justify-center">
+            <div className="relative h-[120px] overflow-hidden rounded-lg">
+              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-emerald-100 to-teal-200">
                 <div
                   className="absolute inset-0 opacity-20"
                   style={{
@@ -601,43 +670,47 @@ export default function ClueEditorPage() {
                       'repeating-linear-gradient(0deg,transparent,transparent 19px,#0001 19px,#0001 20px),repeating-linear-gradient(90deg,transparent,transparent 19px,#0001 19px,#0001 20px)',
                   }}
                 />
-                <div className="relative text-emerald-700 text-center">
+                <div className="relative text-center text-emerald-700">
                   <IconMap />
-                  <p className="text-[11px] mt-1">Map placeholder</p>
+                  <p className="mt-1 text-[11px]">Map placeholder</p>
                 </div>
               </div>
             </div>
-            <button className="text-[12px] text-accent font-medium mt-2 hover:underline">
+            <button className="mt-2 text-[12px] font-medium text-accent hover:underline">
               Change on map →
             </button>
           </div>
 
           {/* Attempts before hint — stored at quest level */}
           <div className="rounded-xl border border-adm-border bg-adm-sidebar p-4">
-            <p className="text-[12px] font-semibold text-adm-muted uppercase tracking-wider mb-1">
+            <p className="mb-1 text-[12px] font-semibold uppercase tracking-wider text-adm-muted">
               {t('attemptsBeforeHint')}
             </p>
-            <p className="text-[11px] text-adm-muted mb-3">Applies to all clues in this quest</p>
+            <p className="mb-3 text-[11px] text-adm-muted">Applies to all clues in this quest</p>
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() =>
-                  setValue('attemptsBeforeHint', Math.max(1, attemptsValue - 1), { shouldDirty: true })
+                  setValue('attemptsBeforeHint', Math.max(1, attemptsValue - 1), {
+                    shouldDirty: true,
+                  })
                 }
-                className="w-9 h-9 rounded-lg border border-adm-border text-adm-text text-xl font-light hover:bg-adm-border/60 transition-colors"
+                className="h-9 w-9 rounded-lg border border-adm-border text-xl font-light text-adm-text transition-colors hover:bg-adm-border/60"
                 aria-label="Decrease"
               >
                 −
               </button>
-              <span className="text-[22px] font-bold text-adm-text w-8 text-center">
+              <span className="w-8 text-center text-[22px] font-bold text-adm-text">
                 {attemptsValue}
               </span>
               <button
                 type="button"
                 onClick={() =>
-                  setValue('attemptsBeforeHint', Math.min(20, attemptsValue + 1), { shouldDirty: true })
+                  setValue('attemptsBeforeHint', Math.min(20, attemptsValue + 1), {
+                    shouldDirty: true,
+                  })
                 }
-                className="w-9 h-9 rounded-lg border border-adm-border text-adm-text text-xl font-light hover:bg-adm-border/60 transition-colors"
+                className="h-9 w-9 rounded-lg border border-adm-border text-xl font-light text-adm-text transition-colors hover:bg-adm-border/60"
                 aria-label="Increase"
               >
                 +
@@ -647,7 +720,7 @@ export default function ClueEditorPage() {
 
           {/* Media upload */}
           <div className="rounded-xl border border-adm-border bg-adm-sidebar p-4">
-            <p className="text-[12px] font-semibold text-adm-muted uppercase tracking-wider mb-3">
+            <p className="mb-3 text-[12px] font-semibold uppercase tracking-wider text-adm-muted">
               {t('media')}
             </p>
             <MediaUpload

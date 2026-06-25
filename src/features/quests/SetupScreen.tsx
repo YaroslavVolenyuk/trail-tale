@@ -35,20 +35,20 @@ function ModeCard({ active, icon, label, description, onClick }: ModeCardProps) 
       aria-checked={active}
       onClick={onClick}
       className={[
-        'relative w-full rounded-card p-5 flex items-center gap-3.5 text-left transition-colors',
+        'relative flex w-full items-center gap-3.5 rounded-card p-5 text-left transition-colors',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
-        'overflow-hidden cursor-pointer',
+        'cursor-pointer overflow-hidden',
         active ? 'bg-surface-raised' : 'bg-surface',
       ].join(' ')}
     >
       {/* Active accent stripe */}
       <div
-        className={`absolute left-0 top-0 bottom-0 w-0.5 transition-colors ${active ? 'bg-accent' : 'bg-transparent'}`}
+        className={`absolute bottom-0 left-0 top-0 w-0.5 transition-colors ${active ? 'bg-accent' : 'bg-transparent'}`}
       />
-      <span className="text-2xl ml-2.5">{icon}</span>
+      <span className="ml-2.5 text-2xl">{icon}</span>
       <div className="flex-1">
         <p className="text-[17px] font-bold text-white">{label}</p>
-        <p className="text-sm text-text-muted mt-0.5">{description}</p>
+        <p className="mt-0.5 text-sm text-text-muted">{description}</p>
       </div>
     </button>
   );
@@ -89,10 +89,10 @@ export default function SetupScreen() {
     <Screen>
       <TopBar title={t('newGame')} onBack={() => navigate(-1)} />
 
-      <div className="flex-1 overflow-y-auto px-6 pt-5 pb-4">
+      <div className="flex-1 overflow-y-auto px-6 pb-4 pt-5">
         {/* Language */}
         <SectionLabel>{t('chooseLanguage')}</SectionLabel>
-        <div role="radiogroup" aria-label={t('chooseLanguage')} className="flex gap-2 mb-8">
+        <div role="radiogroup" aria-label={t('chooseLanguage')} className="mb-8 flex gap-2">
           {LANGS.map((l) => (
             <Pill
               key={l.code}

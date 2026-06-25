@@ -17,12 +17,12 @@ Test:   trailtale-test     → TEST_SUPABASE_URL (только тесты)
 
 ## Стек
 
-| Инструмент | Роль |
-|---|---|
-| **Vitest** | тест-раннер (уже в экосистеме Vite/TS) |
-| **@supabase/supabase-js** | клиент (тот же, что в проде) |
-| **Supabase free project** | изолированная тестовая БД, без Docker |
-| **GitHub Actions** | CI, запуск на каждый push/PR, бесплатно |
+| Инструмент                | Роль                                    |
+| ------------------------- | --------------------------------------- |
+| **Vitest**                | тест-раннер (уже в экосистеме Vite/TS)  |
+| **@supabase/supabase-js** | клиент (тот же, что в проде)            |
+| **Supabase free project** | изолированная тестовая БД, без Docker   |
+| **GitHub Actions**        | CI, запуск на каждый push/PR, бесплатно |
 
 ---
 
@@ -69,11 +69,11 @@ TEST_SUPABASE_SERVICE_KEY=eyJ...   # service_role, для seed/cleanup
 
 Settings → Secrets and variables → Actions → New repository secret:
 
-| Secret | Откуда взять |
-|---|---|
-| `TEST_SUPABASE_URL` | Supabase Dashboard → Project Settings → API → Project URL |
-| `TEST_SUPABASE_ANON_KEY` | Project Settings → API → anon key |
-| `TEST_SUPABASE_SERVICE_KEY` | Project Settings → API → service_role key |
+| Secret                      | Откуда взять                                              |
+| --------------------------- | --------------------------------------------------------- |
+| `TEST_SUPABASE_URL`         | Supabase Dashboard → Project Settings → API → Project URL |
+| `TEST_SUPABASE_ANON_KEY`    | Project Settings → API → anon key                         |
+| `TEST_SUPABASE_SERVICE_KEY` | Project Settings → API → service_role key                 |
 
 ---
 
@@ -186,16 +186,16 @@ npx vitest e2e-db-tests/
 
 ## Приоритеты имплементации
 
-| Приоритет | Сьют | Почему |
-|---|---|---|
-| 🔴 1 | `02-solo-flow` | Основной флоу, ломается чаще всего |
-| 🔴 2 | `04-check-clue` | Rate-limit и hint логика |
-| 🟡 3 | `03-team-flow` | Командная игра |
-| 🟡 4 | `01-quest-crud` | База, нужна для seed |
-| 🟢 5 | `05-recovery` | Важно, но реже ломается |
-| 🟢 6 | `06-leaderboard` | Читающий запрос |
-| 🟢 7 | `07-admin-ops` | Простые update/delete |
-| 🟢 8 | `08-analytics` | Вычисляемые агрегаты |
+| Приоритет | Сьют             | Почему                             |
+| --------- | ---------------- | ---------------------------------- |
+| 🔴 1      | `02-solo-flow`   | Основной флоу, ломается чаще всего |
+| 🔴 2      | `04-check-clue`  | Rate-limit и hint логика           |
+| 🟡 3      | `03-team-flow`   | Командная игра                     |
+| 🟡 4      | `01-quest-crud`  | База, нужна для seed               |
+| 🟢 5      | `05-recovery`    | Важно, но реже ломается            |
+| 🟢 6      | `06-leaderboard` | Читающий запрос                    |
+| 🟢 7      | `07-admin-ops`   | Простые update/delete              |
+| 🟢 8      | `08-analytics`   | Вычисляемые агрегаты               |
 
 ---
 

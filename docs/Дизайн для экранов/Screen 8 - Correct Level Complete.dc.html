@@ -1,78 +1,227 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="./support.js"></script>
-</head>
-<body>
-<x-dc>
-<helmet>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; }
-    body { margin: 0; }
-  </style>
-</helmet>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          *,
+          *::before,
+          *::after {
+            box-sizing: border-box;
+          }
+          body {
+            margin: 0;
+          }
+        </style>
+      </helmet>
 
-<div style="min-height:100vh; background:#1A1A1A; display:flex; align-items:center; justify-content:center; padding:48px 24px; font-family:'Inter',sans-serif;">
-  <x-import component="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
-    <div style="height:100%; display:flex; flex-direction:column; background:radial-gradient(ellipse 260px 260px at 50% 42%, rgba(245,166,35,0.08), transparent), #0A0A0A; font-family:'Inter',sans-serif;">
+      <div
+        style="
+          min-height: 100vh;
+          background: #1a1a1a;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 48px 24px;
+          font-family: 'Inter', sans-serif;
+        "
+      >
+        <x-import
+          component="IOSDevice"
+          from="./ios-frame.jsx"
+          dark="{{ true }}"
+          hint-size="402px,874px"
+        >
+          <div
+            style="
+              height: 100%;
+              display: flex;
+              flex-direction: column;
+              background:
+                radial-gradient(
+                  ellipse 260px 260px at 50% 42%,
+                  rgba(245, 166, 35, 0.08),
+                  transparent
+                ),
+                #0a0a0a;
+              font-family: 'Inter', sans-serif;
+            "
+          >
+            <div style="height: 59px; flex-shrink: 0"></div>
 
-      <div style="height:59px; flex-shrink:0;"></div>
+            <!-- Centered success content -->
+            <div
+              style="
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 0 32px 16px;
+                text-align: center;
+              "
+            >
+              <!-- Check circle (filled amber) -->
+              <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                <circle cx="40" cy="40" r="40" fill="#F5A623" />
+                <path
+                  d="M24 40l12 12 20-20"
+                  stroke="#0A0A0A"
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill="none"
+                />
+              </svg>
 
-      <!-- Centered success content -->
-      <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0 32px 16px; text-align:center;">
+              <h1
+                style="
+                  font-size: 34px;
+                  font-weight: 700;
+                  color: #fff;
+                  margin: 20px 0 0;
+                  letter-spacing: -0.5px;
+                  font-family: 'Inter', sans-serif;
+                "
+              >
+                Correct!
+              </h1>
+              <p
+                style="
+                  font-size: 15px;
+                  color: #8e8e93;
+                  margin: 8px 0 0;
+                  font-family: 'Inter', sans-serif;
+                "
+              >
+                You found:
+              </p>
+              <p
+                style="
+                  font-size: 17px;
+                  font-weight: 600;
+                  color: #fff;
+                  margin: 6px 0 0;
+                  font-family: 'Inter', sans-serif;
+                "
+              >
+                Viper's Venom 🐍
+              </p>
 
-        <!-- Check circle (filled amber) -->
-        <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
-          <circle cx="40" cy="40" r="40" fill="#F5A623"/>
-          <path d="M24 40l12 12 20-20" stroke="#0A0A0A" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-        </svg>
+              <!-- Progress dots -->
+              <div
+                style="
+                  display: flex;
+                  gap: 8px;
+                  align-items: center;
+                  justify-content: center;
+                  margin-top: 32px;
+                "
+              >
+                <div
+                  style="width: 10px; height: 10px; border-radius: 50%; background: #f5a623"
+                ></div>
+                <div
+                  style="width: 10px; height: 10px; border-radius: 50%; background: #f5a623"
+                ></div>
+                <div
+                  style="
+                    width: 10px;
+                    height: 10px;
+                    border-radius: 50%;
+                    background: #fff;
+                    box-shadow: 0 0 0 2.5px #f5a623;
+                  "
+                ></div>
+                <div
+                  style="width: 10px; height: 10px; border-radius: 50%; background: #3a3a3c"
+                ></div>
+                <div
+                  style="width: 10px; height: 10px; border-radius: 50%; background: #3a3a3c"
+                ></div>
+                <div
+                  style="width: 10px; height: 10px; border-radius: 50%; background: #3a3a3c"
+                ></div>
+              </div>
 
-        <h1 style="font-size:34px; font-weight:700; color:#fff; margin:20px 0 0; letter-spacing:-0.5px; font-family:'Inter',sans-serif;">Correct!</h1>
-        <p style="font-size:15px; color:#8E8E93; margin:8px 0 0; font-family:'Inter',sans-serif;">You found:</p>
-        <p style="font-size:17px; font-weight:600; color:#fff; margin:6px 0 0; font-family:'Inter',sans-serif;">Viper's Venom 🐍</p>
+              <!-- Team notified -->
+              <div style="display: flex; align-items: center; gap: 6px; margin-top: 20px">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#8E8E93"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+                <span style="font-size: 13px; color: #8e8e93; font-family: 'Inter', sans-serif"
+                  >Team notified</span
+                >
+              </div>
+            </div>
 
-        <!-- Progress dots -->
-        <div style="display:flex; gap:8px; align-items:center; justify-content:center; margin-top:32px;">
-          <div style="width:10px; height:10px; border-radius:50%; background:#F5A623;"></div>
-          <div style="width:10px; height:10px; border-radius:50%; background:#F5A623;"></div>
-          <div style="width:10px; height:10px; border-radius:50%; background:#fff; box-shadow:0 0 0 2.5px #F5A623;"></div>
-          <div style="width:10px; height:10px; border-radius:50%; background:#3A3A3C;"></div>
-          <div style="width:10px; height:10px; border-radius:50%; background:#3A3A3C;"></div>
-          <div style="width:10px; height:10px; border-radius:50%; background:#3A3A3C;"></div>
-        </div>
-
-        <!-- Team notified -->
-        <div style="display:flex; align-items:center; gap:6px; margin-top:20px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-          </svg>
-          <span style="font-size:13px; color:#8E8E93; font-family:'Inter',sans-serif;">Team notified</span>
-        </div>
-
+            <!-- Bottom: Next Clue button -->
+            <div style="flex-shrink: 0; padding: 0 24px 44px">
+              <button
+                style="
+                  width: 100%;
+                  height: 52px;
+                  background: #f5a623;
+                  border: none;
+                  border-radius: 14px;
+                  color: #0a0a0a;
+                  font-size: 17px;
+                  font-weight: 600;
+                  font-family: 'Inter', sans-serif;
+                  cursor: pointer;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  gap: 8px;
+                "
+              >
+                Next Clue
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#0A0A0A"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12h14" />
+                  <path d="m12 5 7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </x-import>
       </div>
-
-      <!-- Bottom: Next Clue button -->
-      <div style="flex-shrink:0; padding:0 24px 44px;">
-        <button style="width:100%; height:52px; background:#F5A623; border:none; border-radius:14px; color:#0A0A0A; font-size:17px; font-weight:600; font-family:'Inter',sans-serif; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
-          Next Clue
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
-          </svg>
-        </button>
-      </div>
-
-    </div>
-  </x-import>
-</div>
-</x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:520,&quot;height&quot;:960}}"></script>
-</body>
+    </x-dc>
+    <script
+      type="text/x-dc"
+      data-dc-script
+      data-props='{"$preview":{"width":520,"height":960}}'
+    ></script>
+  </body>
 </html>

@@ -24,15 +24,13 @@ function Section({
     >
       <h2
         className={[
-          'text-[15px] font-semibold mb-1',
+          'mb-1 text-[15px] font-semibold',
           danger ? 'text-danger' : 'text-adm-text',
         ].join(' ')}
       >
         {title}
       </h2>
-      {description && (
-        <p className="text-[13px] text-adm-muted mb-4">{description}</p>
-      )}
+      {description && <p className="mb-4 text-[13px] text-adm-muted">{description}</p>}
       {children}
     </div>
   );
@@ -54,18 +52,13 @@ function ProfileSection() {
 
   return (
     <Section title="Profile" description="Your account information.">
-      <div className="space-y-4 max-w-[420px]">
+      <div className="max-w-[420px] space-y-4">
         <div>
-          <label className="block text-[12px] font-semibold text-adm-muted uppercase tracking-wider mb-1.5">
+          <label className="mb-1.5 block text-[12px] font-semibold uppercase tracking-wider text-adm-muted">
             Email
           </label>
-          <input
-            value={email}
-            disabled
-            className={inputCls}
-            type="email"
-          />
-          <p className="text-[12px] text-adm-muted mt-1">
+          <input value={email} disabled className={inputCls} type="email" />
+          <p className="mt-1 text-[12px] text-adm-muted">
             Email cannot be changed here. Contact your administrator.
           </p>
         </div>
@@ -102,48 +95,47 @@ function PasswordSection() {
   };
 
   return (
-    <Section
-      title="Change Password"
-      description="Use a strong password of at least 8 characters."
-    >
-      <div className="space-y-3 max-w-[420px]">
+    <Section title="Change Password" description="Use a strong password of at least 8 characters.">
+      <div className="max-w-[420px] space-y-3">
         <div>
-          <label className="block text-[12px] font-semibold text-adm-muted uppercase tracking-wider mb-1.5">
+          <label className="mb-1.5 block text-[12px] font-semibold uppercase tracking-wider text-adm-muted">
             New password
           </label>
           <input
             type="password"
             value={newPassword}
-            onChange={(e) => { setNewPassword(e.target.value); setStatus('idle'); }}
+            onChange={(e) => {
+              setNewPassword(e.target.value);
+              setStatus('idle');
+            }}
             placeholder="min. 8 characters"
             autoComplete="new-password"
             className={[inputCls, tooShort ? 'border-danger' : ''].join(' ')}
           />
           {tooShort && (
-            <p className="text-[12px] text-danger mt-1">Password must be at least 8 characters.</p>
+            <p className="mt-1 text-[12px] text-danger">Password must be at least 8 characters.</p>
           )}
         </div>
 
         <div>
-          <label className="block text-[12px] font-semibold text-adm-muted uppercase tracking-wider mb-1.5">
+          <label className="mb-1.5 block text-[12px] font-semibold uppercase tracking-wider text-adm-muted">
             Confirm password
           </label>
           <input
             type="password"
             value={confirm}
-            onChange={(e) => { setConfirm(e.target.value); setStatus('idle'); }}
+            onChange={(e) => {
+              setConfirm(e.target.value);
+              setStatus('idle');
+            }}
             placeholder="repeat password"
             autoComplete="new-password"
             className={[inputCls, mismatch ? 'border-danger' : ''].join(' ')}
           />
-          {mismatch && (
-            <p className="text-[12px] text-danger mt-1">Passwords do not match.</p>
-          )}
+          {mismatch && <p className="mt-1 text-[12px] text-danger">Passwords do not match.</p>}
         </div>
 
-        {status === 'error' && (
-          <p className="text-[13px] text-danger">{error}</p>
-        )}
+        {status === 'error' && <p className="text-[13px] text-danger">{error}</p>}
         {status === 'saved' && (
           <p className="text-[13px] text-success">Password updated successfully.</p>
         )}
@@ -151,7 +143,7 @@ function PasswordSection() {
         <button
           onClick={() => void handleSave()}
           disabled={!newPassword || !confirm || mismatch || tooShort || status === 'saving'}
-          className="mt-1 h-[38px] px-5 rounded-btn bg-accent text-bg text-[13px] font-semibold disabled:opacity-40 hover:bg-amber-400 transition-colors"
+          className="mt-1 h-[38px] rounded-btn bg-accent px-5 text-[13px] font-semibold text-bg transition-colors hover:bg-amber-400 disabled:opacity-40"
         >
           {status === 'saving' ? 'Saving…' : 'Update password'}
         </button>
@@ -173,12 +165,8 @@ function DangerSection() {
   };
 
   return (
-    <Section
-      title="Danger zone"
-      description="Irreversible actions. Proceed with caution."
-      danger
-    >
-      <div className="flex items-center justify-between max-w-[560px]">
+    <Section title="Danger zone" description="Irreversible actions. Proceed with caution." danger>
+      <div className="flex max-w-[560px] items-center justify-between">
         <div>
           <p className="text-[13px] font-medium text-adm-text">Sign out all devices</p>
           <p className="text-[12px] text-adm-muted">
@@ -189,14 +177,14 @@ function DangerSection() {
           <div className="flex gap-2">
             <button
               onClick={() => setShowConfirm(false)}
-              className="h-[32px] px-3 rounded-lg border border-adm-border text-adm-muted text-[12px] hover:bg-adm-border/60 transition-colors"
+              className="h-[32px] rounded-lg border border-adm-border px-3 text-[12px] text-adm-muted transition-colors hover:bg-adm-border/60"
             >
               Cancel
             </button>
             <button
               onClick={() => void handleSignOutAll()}
               disabled={isSigning}
-              className="h-[32px] px-3 rounded-lg bg-danger text-white text-[12px] font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="h-[32px] rounded-lg bg-danger px-3 text-[12px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
             >
               {isSigning ? '…' : 'Confirm'}
             </button>
@@ -204,7 +192,7 @@ function DangerSection() {
         ) : (
           <button
             onClick={() => setShowConfirm(true)}
-            className="h-[32px] px-3.5 rounded-lg border border-danger/40 text-danger text-[12px] font-medium hover:bg-danger/8 transition-colors"
+            className="hover:bg-danger/8 h-[32px] rounded-lg border border-danger/40 px-3.5 text-[12px] font-medium text-danger transition-colors"
           >
             Sign out all
           </button>
@@ -220,10 +208,8 @@ export default function SettingsPage() {
   const { t } = useTranslation('admin');
 
   return (
-    <div className="p-8 max-w-[680px]">
-      <h1 className="text-[24px] font-bold text-adm-text mb-6">
-        {t('nav.settings')}
-      </h1>
+    <div className="max-w-[680px] p-8">
+      <h1 className="mb-6 text-[24px] font-bold text-adm-text">{t('nav.settings')}</h1>
 
       <div className="space-y-5">
         <ProfileSection />

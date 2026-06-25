@@ -43,17 +43,10 @@ describe('01 — quest CRUD', () => {
   });
 
   it('updates is_published', async () => {
-    const { error } = await db
-      .from('quests')
-      .update({ is_published: true })
-      .eq('id', questId);
+    const { error } = await db.from('quests').update({ is_published: true }).eq('id', questId);
     expect(error).toBeNull();
 
-    const { data } = await db
-      .from('quests')
-      .select('is_published')
-      .eq('id', questId)
-      .single();
+    const { data } = await db.from('quests').select('is_published').eq('id', questId).single();
     expect(data?.is_published).toBe(true);
   });
 
@@ -93,14 +86,8 @@ describe('01 — quest CRUD', () => {
 
   it('swaps order via manual two-pass update (mirrors reorder_clues)', async () => {
     // Pass 1: shift everything out of conflict range
-    await db
-      .from('clues')
-      .update({ order: 10001 })
-      .eq('id', clueAId);
-    await db
-      .from('clues')
-      .update({ order: 10002 })
-      .eq('id', clueBId);
+    await db.from('clues').update({ order: 10001 }).eq('id', clueAId);
+    await db.from('clues').update({ order: 10002 }).eq('id', clueBId);
     // Pass 2: assign target orders (swapped)
     await db.from('clues').update({ order: 2 }).eq('id', clueAId);
     await db.from('clues').update({ order: 1 }).eq('id', clueBId);
@@ -120,10 +107,7 @@ describe('01 — quest CRUD', () => {
     const { error } = await db.from('clues').delete().eq('id', clueBId);
     expect(error).toBeNull();
 
-    const { data } = await db
-      .from('clues')
-      .select('id')
-      .eq('quest_id', questId);
+    const { data } = await db.from('clues').select('id').eq('quest_id', questId);
     expect(data).toHaveLength(1);
     expect(data?.[0]?.id).toBe(clueAId);
   });
@@ -132,10 +116,7 @@ describe('01 — quest CRUD', () => {
     const { error } = await db.from('quests').delete().eq('id', questId);
     expect(error).toBeNull();
 
-    const { data } = await db
-      .from('clues')
-      .select('id')
-      .eq('quest_id', questId);
+    const { data } = await db.from('clues').select('id').eq('quest_id', questId);
     expect(data ?? []).toHaveLength(0);
   });
 });

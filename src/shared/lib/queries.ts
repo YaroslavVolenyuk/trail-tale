@@ -102,8 +102,8 @@ export function useCheckClueCode() {
     }): Promise<CheckResult> => {
       const { data, error } = await supabase.rpc('check_clue_code', {
         p_session_id: sessionId,
-        p_code:       code,
-        p_device_id:  deviceId ?? null,
+        p_code: code,
+        p_device_id: deviceId ?? null,
       });
       if (error) throw error;
       return data as CheckResult;
@@ -117,8 +117,8 @@ export function useCheckClueCode() {
 // ── useStartSession ───────────────────────────────────────────────────────────
 
 export interface StartSessionResult {
-  session_id:    string;
-  recovery_code: string | null;  // null when resuming an existing session
+  session_id: string;
+  recovery_code: string | null; // null when resuming an existing session
 }
 
 export function useStartSession() {
@@ -140,10 +140,10 @@ export function useStartSession() {
     }): Promise<StartSessionResult> => {
       const params: Record<string, unknown> = {
         p_quest_slug: questSlug,
-        p_nickname:   nickname,
-        p_device_id:  deviceId,
-        p_lang:       lang,
-        p_team_id:    teamId ?? null,
+        p_nickname: nickname,
+        p_device_id: deviceId,
+        p_lang: lang,
+        p_team_id: teamId ?? null,
       };
       // p_is_test added by migration 20240103 — only pass when true to stay
       // backward-compatible with deployments that haven't run it yet
@@ -169,11 +169,11 @@ export function useResumeByRecoveryCode() {
       code,
       deviceId,
     }: {
-      code:     string;
+      code: string;
       deviceId: string;
     }): Promise<{ session_id: string }> => {
       const { data, error } = await supabase.rpc('resume_by_recovery_code', {
-        p_code:      code.toUpperCase().trim(),
+        p_code: code.toUpperCase().trim(),
         p_device_id: deviceId,
       });
       if (error) throw error;
@@ -198,7 +198,7 @@ export function useCreateTeam() {
     }): Promise<{ team_id: string; join_code: string }> => {
       const { data, error } = await supabase.rpc('create_team', {
         p_quest_slug: questSlug,
-        p_name:       name,
+        p_name: name,
       });
       if (error) throw error;
       return data as { team_id: string; join_code: string };
@@ -222,10 +222,10 @@ export function useJoinTeam() {
       lang: string;
     }): Promise<{ session_id: string }> => {
       const { data, error } = await supabase.rpc('join_team_by_code', {
-        p_code:       code,
-        p_nickname:   nickname,
-        p_device_id:  deviceId,
-        p_lang:       lang,
+        p_code: code,
+        p_nickname: nickname,
+        p_device_id: deviceId,
+        p_lang: lang,
       });
       if (error) throw error;
       const result = data as { session_id?: string; error?: string };
@@ -304,9 +304,7 @@ export function useDeleteQuest() {
         .eq('quest_id', questId)
         .not('media_url', 'is', null);
 
-      const paths = (clues ?? [])
-        .map((c) => c.media_url as string)
-        .filter(Boolean);
+      const paths = (clues ?? []).map((c) => c.media_url as string).filter(Boolean);
 
       // 2. Delete media from Storage (best-effort, don't block on errors)
       if (paths.length > 0) {
@@ -314,10 +312,7 @@ export function useDeleteQuest() {
       }
 
       // 3. Delete quest — clues cascade automatically
-      const { error } = await supabase
-        .from('quests')
-        .delete()
-        .eq('id', questId);
+      const { error } = await supabase.from('quests').delete().eq('id', questId);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -401,7 +396,14 @@ export function useCreateQuest() {
 export function useUpdateQuest(slug: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (patch: Partial<{ is_published: boolean; attempts_before_hint: number; city: string; intro: Record<string, string> | null }>) => {
+    mutationFn: async (
+      patch: Partial<{
+        is_published: boolean;
+        attempts_before_hint: number;
+        city: string;
+        intro: Record<string, string> | null;
+      }>,
+    ) => {
       const { error } = await supabase.from('quests').update(patch).eq('slug', slug);
       if (error) throw error;
     },
@@ -426,7 +428,8 @@ export function useSaveClue(questSlug: string) {
         if (error) throw error;
       }
     },
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['admin', 'quest', questSlug] }),
+    onSuccess: () =>
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'quest', questSlug] }),
   });
 }
 
@@ -439,7 +442,8 @@ export function useDeleteClue(questSlug: string) {
       const { error } = await supabase.from('clues').delete().eq('id', clueId);
       if (error) throw error;
     },
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['admin', 'quest', questSlug] }),
+    onSuccess: () =>
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'quest', questSlug] }),
   });
 }
 
@@ -451,11 +455,12 @@ export function useReorderClues(questSlug: string) {
     mutationFn: async (args: { questId: string; orders: { id: string; order: number }[] }) => {
       const { error } = await supabase.rpc('reorder_clues', {
         p_quest_id: args.questId,
-        p_orders:   args.orders,
+        p_orders: args.orders,
       });
       if (error) throw error;
     },
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['admin', 'quest', questSlug] }),
+    onSuccess: () =>
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'quest', questSlug] }),
   });
 }
 
@@ -463,12 +468,12 @@ export function useReorderClues(questSlug: string) {
 
 export interface LiveSessionRow {
   id: string;
-  teamName: string;          // team.name or nickname for solo
-  members: string[];         // nicknames of all team members (empty for solo)
+  teamName: string; // team.name or nickname for solo
+  members: string[]; // nicknames of all team members (empty for solo)
   currentClue: number;
   totalClues: number;
   totalAttempts: number;
-  attemptsRecent: number;    // wrong attempts in last 5 min (computed client-side)
+  attemptsRecent: number; // wrong attempts in last 5 min (computed client-side)
   startedAt: Date;
   lastActiveAt: Date;
   isFinished: boolean;
@@ -481,7 +486,9 @@ export function useLiveSessions(questId: string, totalClues: number) {
       // Fetch sessions with optional team name
       const { data: sessions, error: sErr } = await supabase
         .from('sessions')
-        .select('id, nickname, team_id, current_clue, started_at, last_active_at, finished_at, teams(name)')
+        .select(
+          'id, nickname, team_id, current_clue, started_at, last_active_at, finished_at, teams(name)',
+        )
         .eq('quest_id', questId)
         .order('last_active_at', { ascending: false });
       if (sErr) throw sErr;
@@ -562,7 +569,15 @@ export function useAdminResetSession(questId: string) {
 export function useAdminSkipClue(questId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ sessionId, currentClue, totalClues }: { sessionId: string; currentClue: number; totalClues: number }) => {
+    mutationFn: async ({
+      sessionId,
+      currentClue,
+      totalClues,
+    }: {
+      sessionId: string;
+      currentClue: number;
+      totalClues: number;
+    }) => {
       const next = Math.min(currentClue + 1, totalClues);
       const { error } = await supabase
         .from('sessions')
@@ -593,8 +608,8 @@ export interface QuestAnalytics {
   questTitle: Record<string, string>;
   totalPlays: number;
   finished: number;
-  completionRate: number;   // 0–1
-  avgDurationMs: number;    // avg of finished sessions only
+  completionRate: number; // 0–1
+  avgDurationMs: number; // avg of finished sessions only
 }
 
 export interface AnalyticsSummary {
@@ -681,7 +696,7 @@ export interface PlayerRow {
   id: string;
   nickname: string;
   teamName: string | null;
-  members: string[];         // nicknames of all team members (empty for solo)
+  members: string[]; // nicknames of all team members (empty for solo)
   questId: string;
   questSlug: string;
   questTitle: Record<string, string>;
@@ -700,14 +715,20 @@ export function usePlayers(questFilter?: string) {
     queryFn: async (): Promise<PlayerRow[]> => {
       let sessionQuery = supabase
         .from('sessions')
-        .select('id, nickname, team_id, quest_id, current_clue, started_at, last_active_at, finished_at, lang, is_test, teams(name)')
+        .select(
+          'id, nickname, team_id, quest_id, current_clue, started_at, last_active_at, finished_at, lang, is_test, teams(name)',
+        )
         .or('is_test.eq.false,is_test.is.null')
         .order('started_at', { ascending: false })
         .limit(500);
 
       if (questFilter) {
         // need quest id from slug first
-        const { data: q } = await supabase.from('quests').select('id').eq('slug', questFilter).single();
+        const { data: q } = await supabase
+          .from('quests')
+          .select('id')
+          .eq('slug', questFilter)
+          .single();
         if (q) sessionQuery = sessionQuery.eq('quest_id', q.id);
       }
 
@@ -929,8 +950,8 @@ export function useUpdateSessionLang() {
     }) => {
       const { data, error } = await supabase.rpc('update_session_lang', {
         p_session_id: sessionId,
-        p_lang:       lang,
-        p_device_id:  deviceId,
+        p_lang: lang,
+        p_device_id: deviceId,
       });
       if (error) throw error;
       // RPC now returns { ok: true } or { error: ... } instead of failing silently.

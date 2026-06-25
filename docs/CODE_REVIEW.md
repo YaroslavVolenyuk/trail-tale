@@ -26,19 +26,22 @@ create policy "anon read attempt_log" on public.attempt_log
   for select to anon using (true);
 ```
 
-The initial schema (`20240101…`) was carefully designed so secret clue codes live only in `public.clues` and a `clues_public` view exposes everything **except** `code`. Migration `…02` blows that up: it grants `anon` full `SELECT` (and full write on `quests`/`clues`) directly against `public.clues`, including the `code` column. The comment literally says *"for demo (replace with auth.uid() check later)"* — it never was.
+The initial schema (`20240101…`) was carefully designed so secret clue codes live only in `public.clues` and a `clues_public` view exposes everything **except** `code`. Migration `…02` blows that up: it grants `anon` full `SELECT` (and full write on `quests`/`clues`) directly against `public.clues`, including the `code` column. The comment literally says _"for demo (replace with auth.uid() check later)"_ — it never was.
 
 Concrete exploits any unauthenticated browser can do right now:
 
 ```js
 // Read every clue code in the database
-await supabase.from('clues').select('code, title')
+await supabase.from('clues').select('code, title');
 
 // Vandalize all quests
-await supabase.from('quests').update({ is_published: false }).neq('id', '00000000-0000-0000-0000-000000000000')
+await supabase
+  .from('quests')
+  .update({ is_published: false })
+  .neq('id', '00000000-0000-0000-0000-000000000000');
 
 // Read every player nickname + device_id
-await supabase.from('sessions').select('*')
+await supabase.from('sessions').select('*');
 ```
 
 ### Fix
@@ -96,9 +99,10 @@ create policy "admin read attempt_log" on public.attempt_log
 revoke all on public.clues from anon;
 ```
 
-Then update **every place in `src/shared/lib/queries.ts`** that selects `from('clues')` for *player-facing* reads — there are none in the player flow today, but the admin queries (`useAdminQuest`, `usePlayers`, `useAdminQuests`) must be called by an authenticated admin (they are, after the fix in §2, because `AdminLayout` already gates on `auth.getUser()`).
+Then update **every place in `src/shared/lib/queries.ts`** that selects `from('clues')` for _player-facing_ reads — there are none in the player flow today, but the admin queries (`useAdminQuest`, `usePlayers`, `useAdminQuests`) must be called by an authenticated admin (they are, after the fix in §2, because `AdminLayout` already gates on `auth.getUser()`).
 
 **Verify after migrating:**
+
 ```sh
 # From a logged-out browser console at the app origin:
 fetch(`${VITE_SUPABASE_URL}/rest/v1/clues?select=code`, {
@@ -185,10 +189,12 @@ The admin client writes `code` directly with `supabase.from('clues').update(...)
 ## 4. HIGH — `localStorage` read directly inside render bodies
 
 **Files:**
+
 - `src/features/play/PlayScreen.tsx:200` — `const lang = getLang(localStorage.getItem('tt:lang') ?? 'en');`
 - `src/features/quests/SetupScreen.tsx:62` — `useState<Lang>(parseLang(localStorage.getItem('tt:lang')))`
 
 Reading `localStorage` from a component body works, but:
+
 - It throws in private-mode Safari (the existing `getDeviceId` wraps this in try/catch — the language read does not).
 - It's not reactive: if the user changes language in one tab, other tabs / components stay stale.
 
@@ -226,22 +232,25 @@ onScan={(scannedCode) => {
 }}
 ```
 
-`handleSubmit` is a `useCallback` that closes over `code` from state. Inside the scan callback, `setCode(scannedCode)` is enqueued, but the `setTimeout` captures the *current* render's `handleSubmit`, which still reads the old `code` (empty string). Result: a guaranteed no-op for the first scan.
+`handleSubmit` is a `useCallback` that closes over `code` from state. Inside the scan callback, `setCode(scannedCode)` is enqueued, but the `setTimeout` captures the _current_ render's `handleSubmit`, which still reads the old `code` (empty string). Result: a guaranteed no-op for the first scan.
 
 ### Fix — pass the code through explicitly
 
 ```tsx
 // PlayScreen.tsx
-const handleSubmit = useCallback(async (overrideCode?: string) => {
-  const value = (overrideCode ?? code).trim();
-  if (!sessionId || !value || submitState === 'submitting') return;
-  setSubmitState('submitting');
+const handleSubmit = useCallback(
+  async (overrideCode?: string) => {
+    const value = (overrideCode ?? code).trim();
+    if (!sessionId || !value || submitState === 'submitting') return;
+    setSubmitState('submitting');
 
-  const result = await checkCode
-    .mutateAsync({ sessionId, code: value, deviceId: getDeviceId() })
-    .catch(() => null);
-  // … rest unchanged …
-}, [sessionId, code, submitState, checkCode, startCountdown, triggerShake, navigate, refetch]);
+    const result = await checkCode
+      .mutateAsync({ sessionId, code: value, deviceId: getDeviceId() })
+      .catch(() => null);
+    // … rest unchanged …
+  },
+  [sessionId, code, submitState, checkCode, startCountdown, triggerShake, navigate, refetch],
+);
 ```
 
 ```tsx
@@ -262,11 +271,14 @@ onScan={(scannedCode) => {
 
 ```ts
 const startedAt = (sessionData as unknown as { started_at?: string } | null)?.started_at;
-const questSlug = (sessionData as unknown as { quest?: { slug?: string } } | null)?.quest?.slug ?? '';
-const questTitle = (sessionData as unknown as { quest?: { title?: Record<Lang, string> } })?.quest?.title;
+const questSlug =
+  (sessionData as unknown as { quest?: { slug?: string } } | null)?.quest?.slug ?? '';
+const questTitle = (sessionData as unknown as { quest?: { title?: Record<Lang, string> } })?.quest
+  ?.title;
 ```
 
 Whenever you have to `as unknown as …` you're admitting the type model is wrong. Either:
+
 - `SessionData` is missing fields that `get_session` actually returns, or
 - the RPC doesn't return them and the screen is reading `undefined`.
 
@@ -322,15 +334,15 @@ grant execute on function public.get_session to anon;
 // src/shared/lib/queries.ts — extend SessionData
 export interface SessionData {
   session_id: string;
-  quest_id:   string;
-  quest_slug: string;                       // NEW
+  quest_id: string;
+  quest_slug: string; // NEW
   quest_title: Record<Lang, string>;
   quest_intro: Record<Lang, string> | null;
   nickname: string;
   lang: Lang;
   current_clue: number;
   total_clues: number;
-  started_at: string;                       // NEW
+  started_at: string; // NEW
   finished_at: string | null;
   clue: SessionClue | null;
   wrongs_on_clue: number;
@@ -361,7 +373,7 @@ Microtask-deferred `setState` inside render is a hack. Use `useEffect` or `useSt
 // Replace the ref + microtask hack with an effect:
 useEffect(() => {
   if (clue) setMediaUrl(clue.media_url ?? null);
-}, [clue?.id]);            // only re-syncs when the clue id changes
+}, [clue?.id]); // only re-syncs when the clue id changes
 ```
 
 ---
@@ -409,7 +421,7 @@ export function useReorderClues(questSlug: string) {
     mutationFn: async (args: { questId: string; orders: { id: string; order: number }[] }) => {
       const { error } = await supabase.rpc('reorder_clues', {
         p_quest_id: args.questId,
-        p_orders:   args.orders,
+        p_orders: args.orders,
       });
       if (error) throw error;
     },
@@ -470,7 +482,7 @@ useEffect(() => {
 }, [!!initialIntro]);
 ```
 
-Using `!!initialIntro` makes the effect fire only on the `null ↔ object` transition. If two admins edit concurrently and the cache refreshes with a *different* `initialIntro` object, the form silently keeps the old values. Either trust react-hook-form's `values:` mechanism (used elsewhere in this codebase) or depend on a stable key:
+Using `!!initialIntro` makes the effect fire only on the `null ↔ object` transition. If two admins edit concurrently and the cache refreshes with a _different_ `initialIntro` object, the form silently keeps the old values. Either trust react-hook-form's `values:` mechanism (used elsewhere in this codebase) or depend on a stable key:
 
 ```tsx
 useEffect(() => {
@@ -522,6 +534,7 @@ $$);
 **File:** `src/features/admin/AdminLayout.tsx:64-123`
 
 The `useAdminAuth` hook only navigates on `SIGNED_OUT`. It misses:
+
 - Token refresh failures → user stays on `/admin` with a stale session, queries 401.
 - `INITIAL_SESSION` event after the initial `getUser()` already resolved → no re-check.
 
@@ -544,7 +557,9 @@ function useAdminAuth(): AuthState {
       }
       const { data: admin } = await supabase
         .from('admins')
-        .select('user_id').eq('user_id', userId).maybeSingle();
+        .select('user_id')
+        .eq('user_id', userId)
+        .maybeSingle();
       if (!mounted) return;
       if (!admin) {
         await supabase.auth.signOut();
@@ -557,15 +572,18 @@ function useAdminAuth(): AuthState {
 
     supabase.auth.getUser().then(({ data }) => verify(data.user?.id ?? null));
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
-          void verify(session?.user.id ?? null);
-        }
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
+        void verify(session?.user.id ?? null);
       }
-    );
+    });
 
-    return () => { mounted = false; subscription.unsubscribe(); };
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   return state;
@@ -578,13 +596,13 @@ function useAdminAuth(): AuthState {
 
 Delete these — they're not referenced by `routes.tsx`, `vite.config.ts`, or any import. Leaving them confuses future readers (and other LLMs) about which file is the "real" one:
 
-| Path | Reason |
-| --- | --- |
-| `ActiveClueScreen.jsx` (root) | Pre-Vite, no JSX entry point, superseded by `src/features/play/PlayScreen.tsx`. 315 lines of dead UI. |
-| `src/features/play/PlayPage.tsx` | TODO stub with hard-coded Russian text "Игра". Routes use `PlayScreen.tsx`. |
-| `trail-tale-app/` | Duplicate Vite scaffold from project bootstrap. Already in `.gitignore` but the working copy still exists. |
-| `_tmp_3_*` (root, two files) | Empty temp files from a prior session. |
-| `src/shared/lib/mockData.ts` | Only `type Lang = 'ua'\|'en'\|'de'` is still imported. Move that single type to `src/shared/lib/lang.ts` (5 lines) and delete the 296-line mock file. |
+| Path                             | Reason                                                                                                                                                |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ActiveClueScreen.jsx` (root)    | Pre-Vite, no JSX entry point, superseded by `src/features/play/PlayScreen.tsx`. 315 lines of dead UI.                                                 |
+| `src/features/play/PlayPage.tsx` | TODO stub with hard-coded Russian text "Игра". Routes use `PlayScreen.tsx`.                                                                           |
+| `trail-tale-app/`                | Duplicate Vite scaffold from project bootstrap. Already in `.gitignore` but the working copy still exists.                                            |
+| `_tmp_3_*` (root, two files)     | Empty temp files from a prior session.                                                                                                                |
+| `src/shared/lib/mockData.ts`     | Only `type Lang = 'ua'\|'en'\|'de'` is still imported. Move that single type to `src/shared/lib/lang.ts` (5 lines) and delete the 296-line mock file. |
 
 ```sh
 git rm ActiveClueScreen.jsx _tmp_3_* src/features/play/PlayPage.tsx
@@ -604,7 +622,7 @@ import uaCommon from '../../../locales/ru/common.json';
 // Lang key 'ua' maps to Ukrainian locale files (ru/ folder will be renamed to uk/ later)
 ```
 
-The directory is named after the wrong ISO code (`ru` = Russian), the content is Ukrainian, and the *runtime key* is `ua` (which is the country code, not the language code — Ukrainian is `uk` per ISO 639-1). This will burn whoever next adds a real Russian translation.
+The directory is named after the wrong ISO code (`ru` = Russian), the content is Ukrainian, and the _runtime key_ is `ua` (which is the country code, not the language code — Ukrainian is `uk` per ISO 639-1). This will burn whoever next adds a real Russian translation.
 
 ```sh
 git mv locales/ru locales/uk
@@ -688,7 +706,7 @@ The router has no `errorElement`, no catch-all. A render-time exception in any l
 // src/App.tsx
 const router = createBrowserRouter([
   {
-    element: <RootErrorBoundary />,   // see below
+    element: <RootErrorBoundary />, // see below
     errorElement: <RootErrorBoundary />,
     children: routes,
   },
@@ -702,10 +720,13 @@ import { useRouteError } from 'react-router-dom';
 export function RootErrorBoundary() {
   const err = useRouteError() as Error;
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center bg-bg text-white">
-      <h1 className="text-xl font-bold mb-2">Something went wrong</h1>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-bg p-6 text-center text-white">
+      <h1 className="mb-2 text-xl font-bold">Something went wrong</h1>
       <p className="text-sm text-text-muted">{err?.message ?? 'Unknown error'}</p>
-      <button onClick={() => location.reload()} className="mt-6 px-4 h-10 rounded-btn bg-accent text-bg font-semibold">
+      <button
+        onClick={() => location.reload()}
+        className="mt-6 h-10 rounded-btn bg-accent px-4 font-semibold text-bg"
+      >
         Reload
       </button>
     </div>
@@ -728,11 +749,15 @@ intro: (quest.intro ?? null) as Record<string, string> | null,
 Run `npm run db:types` to regenerate `database.types.ts`, then declare a single helper:
 
 ```ts
-type I18n  = Record<'ua' | 'en' | 'de', string>;
+type I18n = Record<'ua' | 'en' | 'de', string>;
 type Maybe<T> = T | null;
 
-function asI18n(v: unknown): I18n { return v as I18n; }
-function asI18nMaybe(v: unknown): Maybe<I18n> { return v as Maybe<I18n>; }
+function asI18n(v: unknown): I18n {
+  return v as I18n;
+}
+function asI18nMaybe(v: unknown): Maybe<I18n> {
+  return v as Maybe<I18n>;
+}
 ```
 
 (Or just type the `Database` jsonb columns properly with `Json` and let TS narrow.)
@@ -783,6 +808,7 @@ export default defineConfig({
 ```
 
 Priority test targets (where bugs are most costly):
+
 1. `useCheckClueCode` — wrong/correct/rate-limited/finished branches.
 2. `useReorderClues` after the RPC rewrite (§8).
 3. `start_session` resume logic — solo vs team, test vs real.
@@ -815,6 +841,7 @@ Priority test targets (where bugs are most costly):
 6. Commit message convention used here: `fix(security): scope anon RLS to clues_public only` / `refactor(play): pass scanned code to handleSubmit explicitly`.
 
 Run before pushing:
+
 ```sh
 npm run typecheck && npm run lint && npm run build
 ```

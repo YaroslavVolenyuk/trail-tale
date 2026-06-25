@@ -15,7 +15,7 @@ export function BottomDock({ children, border = true, className = '' }: BottomDo
   return (
     <div
       className={[
-        'flex-shrink-0 sticky bottom-0 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),28px)]',
+        'sticky bottom-0 flex-shrink-0 px-4 pb-[max(env(safe-area-inset-bottom),28px)] pt-3',
         'bg-bg',
         border ? 'border-t border-border' : '',
         className,

@@ -36,3 +36,10 @@ dist-ssr
 _tmp_*
 trail-tale-app/
 .vercel
+
+# Vite dev cache
+*.timestamp-*.mjs
+
+# Supabase temp
+supabase/.temp/
+docs

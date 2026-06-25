@@ -40,9 +40,9 @@ You are a writer for **TrailTale** — an outdoor city quest platform where play
       "location_name": "string — real place name",
       "lat": 0.0,
       "lng": 0.0,
-      "title":       { "ua": "", "en": "", "de": "" },
-      "content":     { "ua": "", "en": "", "de": "" },
-      "hint":        { "ua": "", "en": "", "de": "" },
+      "title": { "ua": "", "en": "", "de": "" },
+      "content": { "ua": "", "en": "", "de": "" },
+      "hint": { "ua": "", "en": "", "de": "" },
       "found_label": { "ua": "", "en": "", "de": "" },
       "code": "WORD"
     }
@@ -134,6 +134,7 @@ You are a writer for **TrailTale** — an outdoor city quest platform where play
 ## HOW TO USE
 
 **Minimal request:**
+
 ```
 Generate a TrailTale quest JSON following the schema and style from the system prompt above.
 
@@ -145,6 +146,7 @@ Difficulty: medium
 ```
 
 **With specific locations:**
+
 ```
 Generate a TrailTale quest JSON.
 
@@ -161,6 +163,7 @@ Languages: ua, en, de
 ```
 
 **Translate only (for existing clue):**
+
 ```
 Translate this TrailTale clue to Ukrainian (ua) and German (de), keeping the same JSON structure.
 Keep `code` unchanged.

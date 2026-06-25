@@ -22,9 +22,24 @@ function IconUsers() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
       <circle cx="7" cy="6" r="3" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M2 15c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M13 8.5c1.1 0 2 .9 2 2v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M15.5 14c0-1.1-.9-2-2-2h-.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path
+        d="M2 15c0-2.76 2.24-5 5-5s5 2.24 5 5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M13 8.5c1.1 0 2 .9 2 2v.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M15.5 14c0-1.1-.9-2-2-2h-.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -32,7 +47,13 @@ function IconUsers() {
 function IconChart() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-      <path d="M2 14l4-5 3 3 4-6 3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M2 14l4-5 3 3 4-6 3 3"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
@@ -41,7 +62,12 @@ function IconSettings() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
       <circle cx="9" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M9 2v1.5M9 14.5V16M2 9h1.5M14.5 9H16M3.93 3.93l1.06 1.06M13.01 13.01l1.06 1.06M3.93 14.07l1.06-1.06M13.01 4.99l1.06-1.06" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path
+        d="M9 2v1.5M9 14.5V16M2 9h1.5M14.5 9H16M3.93 3.93l1.06 1.06M13.01 13.01l1.06 1.06M3.93 14.07l1.06-1.06M13.01 4.99l1.06-1.06"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -49,8 +75,19 @@ function IconSettings() {
 function IconImport() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-      <path d="M9 2v9M6 8l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M3 13v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path
+        d="M9 2v9M6 8l3 3 3-3"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M3 13v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-1"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -58,7 +95,13 @@ function IconImport() {
 function IconLogout() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path d="M6 2H3a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3M11 11l3-3-3-3M14 8H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M6 2H3a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3M11 11l3-3-3-3M14 8H6"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
@@ -86,7 +129,7 @@ function useAdminLang() {
   // Apply stored preference on mount (overrides LanguageDetector which reads tt:lang)
   useEffect(() => {
     void i18n.changeLanguage(lang);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const setLang = useCallback((l: Lang) => {
@@ -100,7 +143,7 @@ function useAdminLang() {
 
 function AdminLangPicker({ lang, onChange }: { lang: Lang; onChange: (l: Lang) => void }) {
   return (
-    <div className="flex gap-1 items-center" role="group" aria-label="Interface language">
+    <div className="flex items-center gap-1" role="group" aria-label="Interface language">
       {ADMIN_LANGS.map(({ code, label }) => (
         <button
           key={code}
@@ -108,10 +151,8 @@ function AdminLangPicker({ lang, onChange }: { lang: Lang; onChange: (l: Lang) =
           aria-pressed={lang === code}
           title={code.toUpperCase()}
           className={[
-            'w-7 h-7 rounded-lg text-[16px] flex items-center justify-center transition-colors',
-            lang === code
-              ? 'bg-accent/15 ring-1 ring-accent/40'
-              : 'hover:bg-adm-border/60',
+            'flex h-7 w-7 items-center justify-center rounded-lg text-[16px] transition-colors',
+            lang === code ? 'bg-accent/15 ring-1 ring-accent/40' : 'hover:bg-adm-border/60',
           ].join(' ')}
         >
           {label}
@@ -157,12 +198,10 @@ function useAdminAuth(): AuthState {
     supabase.auth.getUser().then(({ data }) => verify(data.user?.id ?? null));
 
     // Re-check on SIGNED_OUT, token refresh failures, and re-login
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (
-        event === 'SIGNED_OUT' ||
-        event === 'TOKEN_REFRESHED' ||
-        event === 'SIGNED_IN'
-      ) {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
         void verify(session?.user.id ?? null);
       }
     });
@@ -185,11 +224,11 @@ export default function AdminLayout() {
   const [adminLang, setAdminLang] = useAdminLang();
 
   const navItems = [
-    { to: '/admin/quests',    label: t('nav.quests'),    Icon: IconQuests },
-    { to: '/admin/players',   label: t('nav.players'),   Icon: IconUsers },
+    { to: '/admin/quests', label: t('nav.quests'), Icon: IconQuests },
+    { to: '/admin/players', label: t('nav.players'), Icon: IconUsers },
     { to: '/admin/analytics', label: t('nav.analytics'), Icon: IconChart },
-    { to: '/admin/import',    label: t('nav.import'),    Icon: IconImport },
-    { to: '/admin/settings',  label: t('nav.settings'),  Icon: IconSettings },
+    { to: '/admin/import', label: t('nav.import'), Icon: IconImport },
+    { to: '/admin/settings', label: t('nav.settings'), Icon: IconSettings },
   ] as const;
 
   const handleLogout = async () => {
@@ -200,7 +239,7 @@ export default function AdminLayout() {
   if (authState === 'loading') {
     return (
       <div className="flex h-screen items-center justify-center bg-adm-bg">
-        <div className="w-6 h-6 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-accent border-t-transparent" />
       </div>
     );
   }
@@ -210,32 +249,30 @@ export default function AdminLayout() {
   }
 
   return (
-    <div className="flex h-screen bg-adm-bg font-sans overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-adm-bg font-sans">
       {/* Sidebar */}
-      <aside className="w-[240px] flex-shrink-0 bg-adm-sidebar border-r border-adm-border flex flex-col">
+      <aside className="flex w-[240px] flex-shrink-0 flex-col border-r border-adm-border bg-adm-sidebar">
         {/* Brand */}
-        <div className="h-[60px] flex items-center px-6 border-b border-adm-border">
-          <span className="text-[16px] font-bold text-adm-text tracking-[-0.3px]">
-            TrailTale
-          </span>
-          <span className="ml-2 text-[11px] font-medium text-adm-muted bg-adm-border px-1.5 py-0.5 rounded">
+        <div className="flex h-[60px] items-center border-b border-adm-border px-6">
+          <span className="text-[16px] font-bold tracking-[-0.3px] text-adm-text">TrailTale</span>
+          <span className="ml-2 rounded bg-adm-border px-1.5 py-0.5 text-[11px] font-medium text-adm-muted">
             Admin
           </span>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 py-3 overflow-y-auto" aria-label="Admin navigation">
+        <nav className="flex-1 overflow-y-auto py-3" aria-label="Admin navigation">
           {navItems.map(({ to, label, Icon }) => (
             <NavLink
               key={to}
               to={to}
               className={({ isActive }) =>
                 [
-                  'flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg text-[14px] font-medium transition-colors',
+                  'mx-2 flex items-center gap-3 rounded-lg px-4 py-2.5 text-[14px] font-medium transition-colors',
                   'border-l-[3px]',
                   isActive
-                    ? 'border-accent text-accent bg-accent/8'
-                    : 'border-transparent text-adm-muted hover:text-adm-text hover:bg-adm-border/60',
+                    ? 'bg-accent/8 border-accent text-accent'
+                    : 'border-transparent text-adm-muted hover:bg-adm-border/60 hover:text-adm-text',
                 ].join(' ')
               }
             >
@@ -246,11 +283,11 @@ export default function AdminLayout() {
         </nav>
 
         {/* Footer */}
-        <div className="px-4 py-4 border-t border-adm-border space-y-3">
+        <div className="space-y-3 border-t border-adm-border px-4 py-4">
           <AdminLangPicker lang={adminLang} onChange={setAdminLang} />
           <button
             onClick={() => void handleLogout()}
-            className="flex items-center gap-2.5 text-[13px] text-adm-muted hover:text-adm-text transition-colors w-full"
+            className="flex w-full items-center gap-2.5 text-[13px] text-adm-muted transition-colors hover:text-adm-text"
           >
             <IconLogout />
             Log out

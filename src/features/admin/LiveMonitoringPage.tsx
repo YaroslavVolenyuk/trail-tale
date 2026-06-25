@@ -40,18 +40,18 @@ function ConfirmDialog({
   const { t } = useTranslation('admin');
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-      <div className="bg-adm-bg rounded-2xl shadow-2xl p-6 max-w-[360px] w-full mx-4">
-        <p className="text-[15px] text-adm-text mb-5 leading-relaxed">{message}</p>
+      <div className="mx-4 w-full max-w-[360px] rounded-2xl bg-adm-bg p-6 shadow-2xl">
+        <p className="mb-5 text-[15px] leading-relaxed text-adm-text">{message}</p>
         <div className="flex gap-3">
           <button
             onClick={onCancel}
-            className="flex-1 h-[38px] rounded-btn border border-adm-border text-adm-muted text-[13px] font-medium hover:bg-adm-border/60 transition-colors"
+            className="h-[38px] flex-1 rounded-btn border border-adm-border text-[13px] font-medium text-adm-muted transition-colors hover:bg-adm-border/60"
           >
             {t('cancel')}
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 h-[38px] rounded-btn bg-danger text-white text-[13px] font-semibold hover:opacity-90 transition-opacity"
+            className="h-[38px] flex-1 rounded-btn bg-danger text-[13px] font-semibold text-white transition-opacity hover:opacity-90"
           >
             {t('confirm')}
           </button>
@@ -76,9 +76,7 @@ function SessionRow({
 }) {
   const { t } = useTranslation('admin');
   const stuck = isStuck(session);
-  const progress = session.totalClues > 0
-    ? (session.currentClue / session.totalClues) * 100
-    : 0;
+  const progress = session.totalClues > 0 ? (session.currentClue / session.totalClues) * 100 : 0;
   const lastActiveMin = elapsedMin(session.lastActiveAt);
 
   return (
@@ -90,15 +88,18 @@ function SessionRow({
       ].join(' ')}
     >
       {/* Team */}
-      <td className={['px-4 py-3 text-[14px] font-medium', stuck ? 'border-l-[3px] border-danger' : ''].join(' ')}>
+      <td
+        className={[
+          'px-4 py-3 text-[14px] font-medium',
+          stuck ? 'border-l-[3px] border-danger' : '',
+        ].join(' ')}
+      >
         <div className="text-adm-text">{session.teamName}</div>
         {session.members.length > 0 && (
-          <div className="text-[12px] text-adm-muted mt-0.5">
-            {session.members.join(', ')}
-          </div>
+          <div className="mt-0.5 text-[12px] text-adm-muted">{session.members.join(', ')}</div>
         )}
         {stuck && (
-          <div className="text-[12px] text-danger font-medium mt-0.5">
+          <div className="mt-0.5 text-[12px] font-medium text-danger">
             {t('stuckOnClue', { n: session.currentClue })}
           </div>
         )}
@@ -107,21 +108,27 @@ function SessionRow({
       {/* Progress */}
       <td className="px-4 py-3">
         {session.isFinished ? (
-          <div className="flex items-center gap-1.5 text-success text-[13px] font-medium">
+          <div className="flex items-center gap-1.5 text-[13px] font-medium text-success">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M2.5 7l3 3 6-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              <path
+                d="M2.5 7l3 3 6-6"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
             {t('finished')}
           </div>
         ) : (
           <div className="flex items-center gap-2.5">
-            <div className="flex-1 max-w-[100px] h-1.5 bg-adm-border rounded-full overflow-hidden">
+            <div className="h-1.5 max-w-[100px] flex-1 overflow-hidden rounded-full bg-adm-border">
               <div
-                className="h-full bg-accent rounded-full transition-all"
+                className="h-full rounded-full bg-accent transition-all"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <span className="text-[12px] text-adm-muted whitespace-nowrap">
+            <span className="whitespace-nowrap text-[12px] text-adm-muted">
               {t('clueOf', { current: session.currentClue, total: session.totalClues })}
             </span>
           </div>
@@ -130,23 +137,26 @@ function SessionRow({
 
       {/* Attempts */}
       <td className="px-4 py-3">
-        <span className={['text-[13px] font-medium', stuck ? 'text-danger font-bold' : 'text-adm-text'].join(' ')}>
+        <span
+          className={[
+            'text-[13px] font-medium',
+            stuck ? 'font-bold text-danger' : 'text-adm-text',
+          ].join(' ')}
+        >
           {session.totalAttempts}
         </span>
         {stuck && (
-          <span className="text-[11px] text-danger ml-1">({session.attemptsRecent} /5m)</span>
+          <span className="ml-1 text-[11px] text-danger">({session.attemptsRecent} /5m)</span>
         )}
       </td>
 
       {/* Time elapsed */}
-      <td className="px-4 py-3 text-[13px] text-adm-muted">
-        {formatElapsed(session.startedAt)}
-      </td>
+      <td className="px-4 py-3 text-[13px] text-adm-muted">{formatElapsed(session.startedAt)}</td>
 
       {/* Last active */}
       <td className="px-4 py-3 text-[13px]">
         {session.isFinished ? (
-          <span className="text-success font-medium">{t('finished')}</span>
+          <span className="font-medium text-success">{t('finished')}</span>
         ) : (
           <span className="text-adm-muted">{t('minutesAgo', { n: lastActiveMin })}</span>
         )}
@@ -159,13 +169,13 @@ function SessionRow({
             <>
               <button
                 onClick={onReset}
-                className="h-[28px] px-2.5 rounded-lg border border-accent text-accent text-[12px] font-medium hover:bg-accent/8 transition-colors"
+                className="hover:bg-accent/8 h-[28px] rounded-lg border border-accent px-2.5 text-[12px] font-medium text-accent transition-colors"
               >
                 {t('reset')}
               </button>
               <button
                 onClick={onSkip}
-                className="h-[28px] px-2.5 rounded-lg border border-adm-border text-adm-muted text-[12px] font-medium hover:bg-adm-border/60 transition-colors"
+                className="h-[28px] rounded-lg border border-adm-border px-2.5 text-[12px] font-medium text-adm-muted transition-colors hover:bg-adm-border/60"
               >
                 {t('skip')}
               </button>
@@ -173,7 +183,7 @@ function SessionRow({
           )}
           <button
             onClick={onDelete}
-            className="h-[28px] px-2 rounded-lg border border-danger/30 text-danger text-[12px] font-medium hover:bg-danger/8 transition-colors"
+            className="hover:bg-danger/8 h-[28px] rounded-lg border border-danger/30 px-2 text-[12px] font-medium text-danger transition-colors"
           >
             {t('delete')}
           </button>
@@ -194,7 +204,9 @@ export default function LiveMonitoringPage() {
   const { data: questData } = useAdminQuest(slug ?? '');
   const questId = questData?.quest.id ?? '';
   const totalClues = questData?.clues.length ?? 0;
-  const questTitle = (questData?.quest.title['en'] ?? questData?.quest.title['uk'] ?? slug) as string;
+  const questTitle = (questData?.quest.title['en'] ??
+    questData?.quest.title['uk'] ??
+    slug) as string;
 
   const { data: sessions = [], isLoading, dataUpdatedAt } = useLiveSessions(questId, totalClues);
   const resetSession = useAdminResetSession(questId);
@@ -274,53 +286,59 @@ export default function LiveMonitoringPage() {
   return (
     <div className="p-8">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-[13px] text-adm-muted mb-6">
-        <Link to="/admin/quests" className="hover:text-adm-text transition-colors">
+      <nav className="mb-6 flex items-center gap-2 text-[13px] text-adm-muted">
+        <Link to="/admin/quests" className="transition-colors hover:text-adm-text">
           {t('myQuests')}
         </Link>
         <span>›</span>
-        <Link to={`/admin/quests/${slug ?? ''}`} className="hover:text-adm-text transition-colors">
+        <Link to={`/admin/quests/${slug ?? ''}`} className="transition-colors hover:text-adm-text">
           {questTitle}
         </Link>
         <span>›</span>
-        <span className="text-adm-text font-medium">{t('live')}</span>
+        <span className="font-medium text-adm-text">{t('live')}</span>
       </nav>
 
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
+      <div className="mb-6 flex items-center gap-3">
         <h1 className="text-[22px] font-bold text-adm-text">
           {questTitle} — {t('live')}
         </h1>
         <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-success animate-livepulse" />
+          <span className="h-2 w-2 animate-livepulse rounded-full bg-success" />
           <span className="text-[13px] font-medium text-success">{t('live')}</span>
         </div>
-        <span className="text-[13px] text-adm-muted ml-auto">
+        <span className="ml-auto text-[13px] text-adm-muted">
           {t('lastUpdated', { seconds: lastUpdated })}
         </span>
         <button
           onClick={refresh}
-          className="w-8 h-8 flex items-center justify-center rounded-lg border border-adm-border text-adm-muted hover:text-adm-text transition-colors"
+          className="flex h-8 w-8 items-center justify-center rounded-lg border border-adm-border text-adm-muted transition-colors hover:text-adm-text"
           aria-label={t('refresh')}
           title={t('refresh')}
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-            <path d="M1 7A6 6 0 0 1 12 3.5M13 7a6 6 0 0 1-11 3.5M1 7V4M1 7H4M13 7v3M13 7h-3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+            <path
+              d="M1 7A6 6 0 0 1 12 3.5M13 7a6 6 0 0 1-11 3.5M1 7V4M1 7H4M13 7v3M13 7h-3"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </button>
       </div>
 
       {/* Filter pills */}
-      <div className="flex gap-2 mb-5">
+      <div className="mb-5 flex gap-2">
         {filters.map(({ key, label }) => (
           <button
             key={key}
             onClick={() => setFilter(key)}
             className={[
-              'h-[32px] px-3.5 rounded-full text-[13px] font-medium transition-colors',
+              'h-[32px] rounded-full px-3.5 text-[13px] font-medium transition-colors',
               filter === key
                 ? 'bg-accent text-bg'
-                : 'bg-adm-sidebar text-adm-muted border border-adm-border hover:text-adm-text',
+                : 'border border-adm-border bg-adm-sidebar text-adm-muted hover:text-adm-text',
             ].join(' ')}
           >
             {label}
@@ -329,14 +347,21 @@ export default function LiveMonitoringPage() {
       </div>
 
       {/* Table */}
-      <div className="border border-adm-border rounded-xl overflow-hidden">
+      <div className="overflow-hidden rounded-xl border border-adm-border">
         <table className="w-full border-collapse">
           <thead>
-            <tr className="bg-adm-sidebar border-b border-adm-border">
-              {[t('colTeam'), t('colProgress'), t('colAttempts'), t('colTime'), t('colLastActive'), t('colActions')].map((col) => (
+            <tr className="border-b border-adm-border bg-adm-sidebar">
+              {[
+                t('colTeam'),
+                t('colProgress'),
+                t('colAttempts'),
+                t('colTime'),
+                t('colLastActive'),
+                t('colActions'),
+              ].map((col) => (
                 <th
                   key={col}
-                  className="px-4 py-2.5 text-left text-[11px] font-semibold text-adm-muted uppercase tracking-wider"
+                  className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-adm-muted"
                 >
                   {col}
                 </th>
@@ -357,13 +382,13 @@ export default function LiveMonitoringPage() {
         </table>
 
         {isLoading && (
-          <div className="py-10 flex justify-center">
-            <div className="w-5 h-5 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+          <div className="flex justify-center py-10">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent border-t-transparent" />
           </div>
         )}
 
         {!isLoading && filtered.length === 0 && (
-          <p className="text-center text-adm-muted text-[14px] py-10">
+          <p className="py-10 text-center text-[14px] text-adm-muted">
             {filter === 'all' ? 'No active sessions yet.' : `No ${filter} sessions.`}
           </p>
         )}

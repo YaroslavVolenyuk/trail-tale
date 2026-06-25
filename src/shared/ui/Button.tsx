@@ -22,23 +22,34 @@ const sizeClasses: Record<Size, string> = {
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = 'primary', size = 'md', loading = false, disabled, className = '', children, ...props }, ref) => {
+  (
+    {
+      variant = 'primary',
+      size = 'md',
+      loading = false,
+      disabled,
+      className = '',
+      children,
+      ...props
+    },
+    ref,
+  ) => {
     const isDisabled = disabled || loading;
     return (
       <button
         ref={ref}
         disabled={isDisabled}
         className={[
-          'inline-flex items-center justify-center transition-opacity cursor-pointer',
+          'inline-flex cursor-pointer items-center justify-center transition-opacity',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
-          'disabled:opacity-40 disabled:cursor-not-allowed',
+          'disabled:cursor-not-allowed disabled:opacity-40',
           variantClasses[variant],
           sizeClasses[size],
           className,
         ].join(' ')}
         {...props}
       >
-        {loading ? <span className="animate-spin mr-2">⟳</span> : null}
+        {loading ? <span className="mr-2 animate-spin">⟳</span> : null}
         {children}
       </button>
     );

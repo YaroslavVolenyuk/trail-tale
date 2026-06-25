@@ -27,7 +27,7 @@ export function GdprModal({ open, onAgree, onClose }: GdprModalProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/60 z-40"
+            className="fixed inset-0 z-40 bg-black/60"
             onClick={onClose}
             aria-hidden="true"
           />
@@ -40,36 +40,42 @@ export function GdprModal({ open, onAgree, onClose }: GdprModalProps) {
             role="dialog"
             aria-modal="true"
             aria-labelledby="gdpr-title"
-            className="fixed bottom-0 inset-x-0 z-50 bg-bg rounded-t-[24px] px-6 pt-5 pb-[max(env(safe-area-inset-bottom),28px)]"
+            className="fixed inset-x-0 bottom-0 z-50 rounded-t-[24px] bg-bg px-6 pb-[max(env(safe-area-inset-bottom),28px)] pt-5"
           >
-            <div className="w-10 h-1 rounded-full bg-border mx-auto mb-5" aria-hidden="true" />
+            <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-border" aria-hidden="true" />
 
-            <h2 id="gdpr-title" className="text-[20px] font-bold text-white tracking-tight mb-2">
+            <h2 id="gdpr-title" className="mb-2 text-[20px] font-bold tracking-tight text-white">
               {t('gdpr.title')}
             </h2>
-            <p className="text-[14px] text-text-body leading-relaxed mb-5">
-              {t('gdpr.body')}
-            </p>
+            <p className="mb-5 text-[14px] leading-relaxed text-text-body">{t('gdpr.body')}</p>
 
-            <label className="flex items-start gap-3 cursor-pointer mb-6 group">
+            <label className="group mb-6 flex cursor-pointer items-start gap-3">
               <span
                 role="checkbox"
                 aria-checked={checked}
                 tabIndex={0}
-                onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') setChecked((v) => !v); }}
+                onKeyDown={(e) => {
+                  if (e.key === ' ' || e.key === 'Enter') setChecked((v) => !v);
+                }}
                 onClick={() => setChecked((v) => !v)}
                 className={[
-                  'mt-0.5 w-5 h-5 flex-shrink-0 rounded-[5px] border-2 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
-                  checked ? 'bg-accent border-accent' : 'bg-transparent border-border',
+                  'mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-[5px] border-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
+                  checked ? 'border-accent bg-accent' : 'border-border bg-transparent',
                 ].join(' ')}
               >
                 {checked && (
                   <svg width="11" height="9" viewBox="0 0 11 9" fill="none" aria-hidden="true">
-                    <path d="M1 4.5L4 7.5L10 1" stroke="#0A0A0A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path
+                      d="M1 4.5L4 7.5L10 1"
+                      stroke="#0A0A0A"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 )}
               </span>
-              <span className="text-[14px] text-text-body leading-snug select-none">
+              <span className="select-none text-[14px] leading-snug text-text-body">
                 {t('gdpr.checkboxLabel')}
               </span>
             </label>
@@ -78,9 +84,9 @@ export function GdprModal({ open, onAgree, onClose }: GdprModalProps) {
               onClick={handleAgree}
               disabled={!checked}
               className={[
-                'w-full h-btn rounded-btn bg-accent text-bg text-[16px] font-semibold transition-opacity',
+                'h-btn w-full rounded-btn bg-accent text-[16px] font-semibold text-bg transition-opacity',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
-                checked ? 'opacity-100 cursor-pointer' : 'opacity-40 cursor-not-allowed',
+                checked ? 'cursor-pointer opacity-100' : 'cursor-not-allowed opacity-40',
               ].join(' ')}
             >
               {t('gdpr.agree')}

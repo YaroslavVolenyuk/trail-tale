@@ -34,11 +34,11 @@ Plan and rationale: [`docs/PLAN.md`](../docs/PLAN.md).
 `.github/workflows/db-tests.yml` runs on every push/PR to `main`/`master`.
 Required secrets:
 
-| Secret                       | Source                                                |
-| ---------------------------- | ----------------------------------------------------- |
-| `TEST_SUPABASE_URL`          | Test project → Project Settings → API → Project URL   |
-| `TEST_SUPABASE_ANON_KEY`     | Test project → Project Settings → API → anon key      |
-| `TEST_SUPABASE_SERVICE_KEY`  | Test project → Project Settings → API → service_role  |
+| Secret                      | Source                                               |
+| --------------------------- | ---------------------------------------------------- |
+| `TEST_SUPABASE_URL`         | Test project → Project Settings → API → Project URL  |
+| `TEST_SUPABASE_ANON_KEY`    | Test project → Project Settings → API → anon key     |
+| `TEST_SUPABASE_SERVICE_KEY` | Test project → Project Settings → API → service_role |
 
 ## Notes
 

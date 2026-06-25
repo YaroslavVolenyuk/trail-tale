@@ -15,13 +15,7 @@ interface FormValues {
 
 // ── RecoveryCodeModal ─────────────────────────────────────────────────────────
 
-function RecoveryCodeModal({
-  code,
-  onDone,
-}: {
-  code: string;
-  onDone: () => void;
-}) {
+function RecoveryCodeModal({ code, onDone }: { code: string; onDone: () => void }) {
   const { t } = useTranslation('common');
   const [copied, setCopied] = useState(false);
 
@@ -35,26 +29,22 @@ function RecoveryCodeModal({
   return (
     <div className="fixed inset-0 z-50 flex items-end">
       <div className="absolute inset-0 bg-black/70" />
-      <div className="relative w-full bg-surface rounded-t-2xl px-6 pt-6 pb-[max(env(safe-area-inset-bottom),32px)]">
-        <div className="w-10 h-1 bg-border rounded-full mx-auto mb-6" />
+      <div className="relative w-full rounded-t-2xl bg-surface px-6 pb-[max(env(safe-area-inset-bottom),32px)] pt-6">
+        <div className="mx-auto mb-6 h-1 w-10 rounded-full bg-border" />
 
-        <h2 className="text-[22px] font-bold text-white mb-1">
-          {t('recovery.title')}
-        </h2>
-        <p className="text-sm text-text-muted mb-6">
-          {t('recovery.body')}
-        </p>
+        <h2 className="mb-1 text-[22px] font-bold text-white">{t('recovery.title')}</h2>
+        <p className="mb-6 text-sm text-text-muted">{t('recovery.body')}</p>
 
         {/* Code display */}
-        <div className="bg-surface-raised rounded-card py-5 flex items-center justify-center mb-4">
-          <span className="text-[32px] font-bold tracking-[0.25em] text-accent font-mono">
+        <div className="mb-4 flex items-center justify-center rounded-card bg-surface-raised py-5">
+          <span className="font-mono text-[32px] font-bold tracking-[0.25em] text-accent">
             {code}
           </span>
         </div>
 
         <button
           onClick={handleCopy}
-          className="w-full h-[44px] rounded-btn border border-border text-text-muted text-sm mb-4 transition-colors active:text-white"
+          className="mb-4 h-[44px] w-full rounded-btn border border-border text-sm text-text-muted transition-colors active:text-white"
         >
           {copied ? t('copied') : t('recovery.copy')}
         </button>
@@ -98,11 +88,7 @@ export default function NicknameScreen() {
   }, []);
 
   const schema = z.object({
-    nickname: z
-      .string()
-      .trim()
-      .min(2, t('errors.tooShort'))
-      .max(20, t('errors.tooLong')),
+    nickname: z.string().trim().min(2, t('errors.tooShort')).max(20, t('errors.tooLong')),
   });
 
   const { register, handleSubmit, watch, formState } = useForm<FormValues>({
@@ -138,7 +124,7 @@ export default function NicknameScreen() {
       // Show recovery code modal only on fresh sessions (not resumes)
       if (result.recovery_code) {
         setPendingSession({
-          sessionId:    result.session_id,
+          sessionId: result.session_id,
           recoveryCode: result.recovery_code,
         });
       } else {
@@ -155,15 +141,13 @@ export default function NicknameScreen() {
       <Screen>
         <TopBar title={t('yourName')} onBack={() => navigate(-1)} />
 
-        <div className="flex-1 overflow-y-auto px-6 pt-8 pb-4">
-          <h2 className="text-[28px] font-bold text-white tracking-tight">
-            {t('whatsYourName')}
-          </h2>
-          <p className="text-[15px] text-text-muted mt-1.5">{t('shownOnLeaderboard')}</p>
+        <div className="flex-1 overflow-y-auto px-6 pb-4 pt-8">
+          <h2 className="text-[28px] font-bold tracking-tight text-white">{t('whatsYourName')}</h2>
+          <p className="mt-1.5 text-[15px] text-text-muted">{t('shownOnLeaderboard')}</p>
 
           {state.isTest && (
-            <div className="mt-3 px-3 py-1.5 bg-amber-500/15 rounded-lg inline-flex items-center gap-2">
-              <span className="text-xs font-bold text-accent tracking-widest uppercase">TEST</span>
+            <div className="mt-3 inline-flex items-center gap-2 rounded-lg bg-amber-500/15 px-3 py-1.5">
+              <span className="text-xs font-bold uppercase tracking-widest text-accent">TEST</span>
               <span className="text-xs text-text-muted">session won't appear in leaderboard</span>
             </div>
           )}
@@ -181,19 +165,15 @@ export default function NicknameScreen() {
               autoComplete="off"
               enterKeyHint="done"
               error={!!formState.errors['nickname']}
-              rightAdornment={
-                <span className="text-xs text-text-muted">
-                  {value.length} / 20
-                </span>
-              }
+              rightAdornment={<span className="text-xs text-text-muted">{value.length} / 20</span>}
             />
             {formState.errors['nickname'] && (
-              <p className="text-sm text-danger mt-2" role="alert">
+              <p className="mt-2 text-sm text-danger" role="alert">
                 {formState.errors['nickname'].message}
               </p>
             )}
             {mutationError && (
-              <p className="text-sm text-danger mt-2" role="alert">
+              <p className="mt-2 text-sm text-danger" role="alert">
                 {(mutationError as Error).message ?? String(mutationError)}
               </p>
             )}
@@ -204,7 +184,7 @@ export default function NicknameScreen() {
           <Button
             onClick={handleSubmit(onSubmit)}
             disabled={!formState.isValid || isPending}
-            className={(!formState.isValid || isPending) ? 'opacity-40' : ''}
+            className={!formState.isValid || isPending ? 'opacity-40' : ''}
           >
             {isPending ? '…' : t('continue')}
           </Button>

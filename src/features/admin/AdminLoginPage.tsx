@@ -16,7 +16,10 @@ export default function AdminLoginPage() {
     setLoading(true);
     setError('');
 
-    const { data: signInData, error: authError } = await supabase.auth.signInWithPassword({ email, password });
+    const { data: signInData, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
     if (authError) {
       setError(authError.message);
@@ -45,13 +48,16 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-adm-bg flex items-center justify-center p-6 font-sans">
+    <div className="flex min-h-screen items-center justify-center bg-adm-bg p-6 font-sans">
       <div className="w-full max-w-[360px]">
         {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-accent mb-4">
+        <div className="mb-8 text-center">
+          <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent">
             <svg width="24" height="24" viewBox="0 0 60 72" fill="none">
-              <path d="M30 4C18 4 8 14 8 26C8 40 18 54 30 68C42 54 52 40 52 26C52 14 42 4 30 4Z" fill="#0A0A0A" />
+              <path
+                d="M30 4C18 4 8 14 8 26C8 40 18 54 30 68C42 54 52 40 52 26C52 14 42 4 30 4Z"
+                fill="#0A0A0A"
+              />
               <circle cx="30" cy="23" r="8.5" fill="#F5A623" />
               <path d="M26 30L23 45H37L34 30H26Z" fill="#F5A623" />
             </svg>
@@ -61,7 +67,7 @@ export default function AdminLoginPage() {
 
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
           <div>
-            <label className="block text-[13px] font-medium text-adm-muted mb-1.5">
+            <label className="mb-1.5 block text-[13px] font-medium text-adm-muted">
               {t('login.email')}
             </label>
             <input
@@ -71,11 +77,11 @@ export default function AdminLoginPage() {
               placeholder="admin@trailtale.app"
               required
               autoComplete="email"
-              className="w-full h-[44px] px-3.5 rounded-[10px] border border-adm-border bg-adm-bg text-adm-text text-[15px] outline-none focus:border-accent transition-colors placeholder:text-adm-placeholder"
+              className="h-[44px] w-full rounded-[10px] border border-adm-border bg-adm-bg px-3.5 text-[15px] text-adm-text outline-none transition-colors placeholder:text-adm-placeholder focus:border-accent"
             />
           </div>
           <div>
-            <label className="block text-[13px] font-medium text-adm-muted mb-1.5">
+            <label className="mb-1.5 block text-[13px] font-medium text-adm-muted">
               {t('login.password')}
             </label>
             <input
@@ -85,18 +91,16 @@ export default function AdminLoginPage() {
               placeholder="••••••••"
               required
               autoComplete="current-password"
-              className="w-full h-[44px] px-3.5 rounded-[10px] border border-adm-border bg-adm-bg text-adm-text text-[15px] outline-none focus:border-accent transition-colors"
+              className="h-[44px] w-full rounded-[10px] border border-adm-border bg-adm-bg px-3.5 text-[15px] text-adm-text outline-none transition-colors focus:border-accent"
             />
           </div>
 
-          {error && (
-            <p className="text-[13px] text-danger">{error}</p>
-          )}
+          {error && <p className="text-[13px] text-danger">{error}</p>}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full h-[44px] rounded-btn bg-accent text-bg font-semibold text-[15px] disabled:opacity-60 transition-opacity mt-2"
+            className="mt-2 h-[44px] w-full rounded-btn bg-accent text-[15px] font-semibold text-bg transition-opacity disabled:opacity-60"
           >
             {loading ? '…' : t('login.submit')}
           </button>

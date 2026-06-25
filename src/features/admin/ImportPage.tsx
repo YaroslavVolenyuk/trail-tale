@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/shared/lib/supabase';
 import {
-  useAdminPrompts, useUpsertPrompt, useDeletePrompt,
+  useAdminPrompts,
+  useUpsertPrompt,
+  useDeletePrompt,
   type AdminPrompt,
 } from '@/shared/lib/queries';
 
@@ -35,14 +37,18 @@ type ImportStatus = 'idle' | 'validating' | 'importing' | 'done' | 'error';
 
 // ── Validation ────────────────────────────────────────────────────────────────
 
-function validateQuest(data: unknown): { ok: true; quest: ImportQuest } | { ok: false; errors: string[] } {
+function validateQuest(
+  data: unknown,
+): { ok: true; quest: ImportQuest } | { ok: false; errors: string[] } {
   const errors: string[] = [];
   const q = data as Record<string, unknown>;
 
   if (!q.slug || typeof q.slug !== 'string') errors.push('Missing or invalid "slug"');
-  if (!q.title || typeof q.title !== 'object') errors.push('Missing "title" (must be {ua, en, de})');
+  if (!q.title || typeof q.title !== 'object')
+    errors.push('Missing "title" (must be {ua, en, de})');
   if (!q.description || typeof q.description !== 'object') errors.push('Missing "description"');
-  if (!Array.isArray(q.clues) || q.clues.length === 0) errors.push('Missing or empty "clues" array');
+  if (!Array.isArray(q.clues) || q.clues.length === 0)
+    errors.push('Missing or empty "clues" array');
 
   if (errors.length > 0) return { ok: false, errors };
 
@@ -75,16 +81,16 @@ async function importQuest(quest: ImportQuest): Promise<string> {
     .from('quests')
     .upsert(
       {
-        slug:                 questFields.slug,
-        title:                normalizeLang(questFields.title),
-        description:          normalizeLang(questFields.description),
-        intro:                normalizeLang(questFields.description), // backstory shown before first clue
-        city:                 questFields.city ?? null,
-        cover_gradient:       questFields.cover_gradient ?? null,
+        slug: questFields.slug,
+        title: normalizeLang(questFields.title),
+        description: normalizeLang(questFields.description),
+        intro: normalizeLang(questFields.description), // backstory shown before first clue
+        city: questFields.city ?? null,
+        cover_gradient: questFields.cover_gradient ?? null,
         attempts_before_hint: questFields.attempts_before_hint ?? 3,
-        is_published:         false,
+        is_published: false,
       },
-      { onConflict: 'slug' }
+      { onConflict: 'slug' },
     )
     .select('id')
     .single();
@@ -100,17 +106,17 @@ async function importQuest(quest: ImportQuest): Promise<string> {
   // Insert new clues
   const { error: insErr } = await supabase.from('clues').insert(
     clues.map((c) => ({
-      quest_id:      questId,
-      order:         c.order,
+      quest_id: questId,
+      order: c.order,
       location_name: c.location_name ?? null,
-      lat:           c.lat ?? null,
-      lng:           c.lng ?? null,
-      title:         normalizeLang(c.title),
-      content:       normalizeLang(c.content),
-      hint:          c.hint ? normalizeLang(c.hint) : null,
-      found_label:   c.found_label ? normalizeLang(c.found_label) : null,
-      code:          c.code.trim().toUpperCase(),
-    }))
+      lat: c.lat ?? null,
+      lng: c.lng ?? null,
+      title: normalizeLang(c.title),
+      content: normalizeLang(c.content),
+      hint: c.hint ? normalizeLang(c.hint) : null,
+      found_label: c.found_label ? normalizeLang(c.found_label) : null,
+      code: c.code.trim().toUpperCase(),
+    })),
   );
   if (insErr) throw new Error(`Insert clues failed: ${insErr.message}`);
 
@@ -231,20 +237,31 @@ function CopyButton({ text, label }: { text: string; label?: string }) {
     <button
       onClick={() => void handleCopy()}
       className={[
-        'inline-flex items-center gap-1.5 h-[28px] px-3 rounded-lg text-[12px] font-medium transition-colors',
+        'inline-flex h-[28px] items-center gap-1.5 rounded-lg px-3 text-[12px] font-medium transition-colors',
         copied
           ? 'bg-success/10 text-success'
-          : 'bg-adm-sidebar border border-adm-border text-adm-muted hover:text-adm-text hover:bg-adm-border/60',
+          : 'border border-adm-border bg-adm-sidebar text-adm-muted hover:bg-adm-border/60 hover:text-adm-text',
       ].join(' ')}
     >
       {copied ? (
         <>
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path
+              d="M2 6l3 3 5-5"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
           Copied!
         </>
       ) : (
         <>
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="4" y="1" width="7" height="8" rx="1" stroke="currentColor" strokeWidth="1.2" /><rect x="1" y="4" width="7" height="8" rx="1" stroke="currentColor" strokeWidth="1.2" /></svg>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <rect x="4" y="1" width="7" height="8" rx="1" stroke="currentColor" strokeWidth="1.2" />
+            <rect x="1" y="4" width="7" height="8" rx="1" stroke="currentColor" strokeWidth="1.2" />
+          </svg>
           {label ?? 'Copy'}
         </>
       )}
@@ -300,23 +317,38 @@ function ImportTab() {
     return (
       <div className="max-w-[560px]">
         <div className="rounded-xl border border-success/30 bg-green-50/40 p-6 text-center">
-          <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-3">
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M4 11l5 5 9-9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-success" /></svg>
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-success/10">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+              <path
+                d="M4 11l5 5 9-9"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-success"
+              />
+            </svg>
           </div>
-          <h3 className="text-[16px] font-bold text-adm-text mb-1">Import successful</h3>
-          <p className="text-[14px] text-adm-muted mb-4">
-            Quest <span className="font-mono text-adm-text">{result.slug}</span> — {result.clues} clue{result.clues !== 1 ? 's' : ''} imported.
+          <h3 className="mb-1 text-[16px] font-bold text-adm-text">Import successful</h3>
+          <p className="mb-4 text-[14px] text-adm-muted">
+            Quest <span className="font-mono text-adm-text">{result.slug}</span> — {result.clues}{' '}
+            clue{result.clues !== 1 ? 's' : ''} imported.
           </p>
-          <div className="flex gap-3 justify-center">
+          <div className="flex justify-center gap-3">
             <button
               onClick={() => navigate(`/admin/quests/${result.slug}`)}
-              className="h-[36px] px-4 rounded-btn bg-accent text-bg text-[13px] font-semibold hover:bg-amber-400 transition-colors"
+              className="h-[36px] rounded-btn bg-accent px-4 text-[13px] font-semibold text-bg transition-colors hover:bg-amber-400"
             >
               Open quest →
             </button>
             <button
-              onClick={() => { setStatus('idle'); setRaw(''); setPreview(null); setResult(null); }}
-              className="h-[36px] px-4 rounded-btn border border-adm-border text-adm-muted text-[13px] hover:bg-adm-border/60 transition-colors"
+              onClick={() => {
+                setStatus('idle');
+                setRaw('');
+                setPreview(null);
+                setResult(null);
+              }}
+              className="h-[36px] rounded-btn border border-adm-border px-4 text-[13px] text-adm-muted transition-colors hover:bg-adm-border/60"
             >
               Import another
             </button>
@@ -329,21 +361,26 @@ function ImportTab() {
   return (
     <div className="max-w-[700px] space-y-4">
       <p className="text-[14px] text-adm-muted">
-        Paste a quest JSON generated by an LLM. The quest will be imported in draft state — you can review and publish it afterwards.
+        Paste a quest JSON generated by an LLM. The quest will be imported in draft state — you can
+        review and publish it afterwards.
       </p>
 
       {/* Textarea */}
       <div className="relative">
         <textarea
           value={raw}
-          onChange={(e) => { setRaw(e.target.value); setErrors([]); setPreview(null); }}
+          onChange={(e) => {
+            setRaw(e.target.value);
+            setErrors([]);
+            setPreview(null);
+          }}
           placeholder={'{\n  "slug": "my-quest",\n  "clues": [...]\n}'}
           rows={18}
           spellCheck={false}
-          className="w-full px-4 py-3 rounded-xl border border-adm-border bg-adm-bg text-adm-text text-[13px] font-mono leading-relaxed outline-none focus:border-accent transition-colors resize-none placeholder:text-adm-placeholder"
+          className="w-full resize-none rounded-xl border border-adm-border bg-adm-bg px-4 py-3 font-mono text-[13px] leading-relaxed text-adm-text outline-none transition-colors placeholder:text-adm-placeholder focus:border-accent"
         />
         {raw && (
-          <div className="absolute top-3 right-3">
+          <div className="absolute right-3 top-3">
             <CopyButton text={raw} label="Copy JSON" />
           </div>
         )}
@@ -352,10 +389,12 @@ function ImportTab() {
       {/* Errors */}
       {status === 'error' && errors.length > 0 && (
         <div className="rounded-lg border border-danger/30 bg-red-50/40 p-4">
-          <p className="text-[13px] font-semibold text-danger mb-2">Validation errors:</p>
+          <p className="mb-2 text-[13px] font-semibold text-danger">Validation errors:</p>
           <ul className="space-y-1">
             {errors.map((e, i) => (
-              <li key={i} className="text-[13px] text-danger">• {e}</li>
+              <li key={i} className="text-[13px] text-danger">
+                • {e}
+              </li>
             ))}
           </ul>
         </div>
@@ -364,18 +403,21 @@ function ImportTab() {
       {/* Preview */}
       {preview && (
         <div className="rounded-xl border border-adm-border bg-adm-sidebar p-4">
-          <p className="text-[12px] font-semibold text-adm-muted uppercase tracking-wider mb-2">Preview</p>
+          <p className="mb-2 text-[12px] font-semibold uppercase tracking-wider text-adm-muted">
+            Preview
+          </p>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[15px] font-semibold text-adm-text">
                 {preview.title['en'] ?? preview.title['uk'] ?? preview.slug}
               </p>
               <p className="text-[13px] text-adm-muted">
-                {preview.city && `${preview.city} · `}{preview.clues.length} clue{preview.clues.length !== 1 ? 's' : ''}
+                {preview.city && `${preview.city} · `}
+                {preview.clues.length} clue{preview.clues.length !== 1 ? 's' : ''}
                 {' · '}slug: <span className="font-mono">{preview.slug}</span>
               </p>
             </div>
-            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-adm-draftBg text-adm-draftFg">
+            <span className="rounded-full bg-adm-draftBg px-2 py-0.5 text-[11px] font-semibold text-adm-draftFg">
               Draft
             </span>
           </div>
@@ -387,18 +429,18 @@ function ImportTab() {
         <button
           onClick={handleValidate}
           disabled={!raw.trim() || status === 'importing'}
-          className="h-[38px] px-5 rounded-btn border border-adm-border text-adm-text text-[13px] font-medium disabled:opacity-40 hover:bg-adm-border/60 transition-colors"
+          className="h-[38px] rounded-btn border border-adm-border px-5 text-[13px] font-medium text-adm-text transition-colors hover:bg-adm-border/60 disabled:opacity-40"
         >
           Validate JSON
         </button>
         <button
           onClick={() => void handleImport()}
           disabled={!preview || status === 'importing'}
-          className="h-[38px] px-5 rounded-btn bg-accent text-bg text-[13px] font-semibold disabled:opacity-40 hover:bg-amber-400 transition-colors"
+          className="h-[38px] rounded-btn bg-accent px-5 text-[13px] font-semibold text-bg transition-colors hover:bg-amber-400 disabled:opacity-40"
         >
           {status === 'importing' ? (
             <span className="flex items-center gap-2">
-              <span className="w-3.5 h-3.5 border-2 border-bg border-t-transparent rounded-full animate-spin" />
+              <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-bg border-t-transparent" />
               Importing…
             </span>
           ) : (
@@ -408,7 +450,8 @@ function ImportTab() {
       </div>
 
       <p className="text-[12px] text-adm-muted">
-        Importing will overwrite any existing clues for a quest with the same slug. The quest will be saved as <strong>Draft</strong>.
+        Importing will overwrite any existing clues for a quest with the same slug. The quest will
+        be saved as <strong>Draft</strong>.
       </p>
     </div>
   );
@@ -460,11 +503,19 @@ function PromptCard({
   };
 
   return (
-    <div className={['rounded-xl border bg-adm-bg overflow-hidden transition-colors', editing ? 'border-accent/50' : 'border-adm-border'].join(' ')}>
+    <div
+      className={[
+        'overflow-hidden rounded-xl border bg-adm-bg transition-colors',
+        editing ? 'border-accent/50' : 'border-adm-border',
+      ].join(' ')}
+    >
       {/* Header */}
       <div className="flex items-center gap-2 px-4 py-3.5">
         <button
-          onClick={() => { setExpanded((v) => !v); if (editing) setEditing(false); }}
+          onClick={() => {
+            setExpanded((v) => !v);
+            if (editing) setEditing(false);
+          }}
           className="flex-1 text-left"
         >
           {editing ? (
@@ -472,7 +523,7 @@ function PromptCard({
               value={draft.label}
               onChange={(e) => setDraft((d) => ({ ...d, label: e.target.value }))}
               onClick={(e) => e.stopPropagation()}
-              className="text-[14px] font-semibold text-adm-text bg-transparent border-b border-accent outline-none w-full"
+              className="w-full border-b border-accent bg-transparent text-[14px] font-semibold text-adm-text outline-none"
             />
           ) : (
             <p className="text-[14px] font-semibold text-adm-text">{prompt.label}</p>
@@ -482,29 +533,27 @@ function PromptCard({
               value={draft.description}
               onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
               onClick={(e) => e.stopPropagation()}
-              className="text-[12px] text-adm-muted bg-transparent border-b border-adm-border outline-none w-full mt-0.5"
+              className="mt-0.5 w-full border-b border-adm-border bg-transparent text-[12px] text-adm-muted outline-none"
             />
           ) : (
             <p className="text-[12px] text-adm-muted">{prompt.description}</p>
           )}
         </button>
 
-        <div className="flex items-center gap-1.5 flex-shrink-0">
-          {saved && (
-            <span className="text-[12px] text-success font-medium">Saved</span>
-          )}
+        <div className="flex flex-shrink-0 items-center gap-1.5">
+          {saved && <span className="text-[12px] font-medium text-success">Saved</span>}
           {editing ? (
             <>
               <button
                 onClick={handleDiscard}
-                className="h-[28px] px-2.5 rounded-lg border border-adm-border text-adm-muted text-[12px] hover:bg-adm-border/60 transition-colors"
+                className="h-[28px] rounded-lg border border-adm-border px-2.5 text-[12px] text-adm-muted transition-colors hover:bg-adm-border/60"
               >
                 Discard
               </button>
               <button
                 onClick={() => void handleSave()}
                 disabled={!isDirty || saving}
-                className="h-[28px] px-2.5 rounded-lg bg-accent text-bg text-[12px] font-semibold disabled:opacity-40 hover:bg-amber-400 transition-colors"
+                className="h-[28px] rounded-lg bg-accent px-2.5 text-[12px] font-semibold text-bg transition-colors hover:bg-amber-400 disabled:opacity-40"
               >
                 {saving ? '…' : 'Save'}
               </button>
@@ -513,29 +562,49 @@ function PromptCard({
             <>
               <CopyButton text={prompt.template} label="Copy" />
               <button
-                onClick={() => { setEditing(true); setExpanded(true); }}
-                className="h-[28px] px-2.5 rounded-lg border border-adm-border text-adm-muted text-[12px] hover:text-adm-text hover:bg-adm-border/60 transition-colors"
+                onClick={() => {
+                  setEditing(true);
+                  setExpanded(true);
+                }}
+                className="h-[28px] rounded-lg border border-adm-border px-2.5 text-[12px] text-adm-muted transition-colors hover:bg-adm-border/60 hover:text-adm-text"
               >
                 Edit
               </button>
               <button
                 onClick={() => onDelete(prompt.id)}
-                className="h-[28px] w-[28px] rounded-lg border border-danger/30 text-danger text-[12px] hover:bg-danger/8 transition-colors flex items-center justify-center"
+                className="hover:bg-danger/8 flex h-[28px] w-[28px] items-center justify-center rounded-lg border border-danger/30 text-[12px] text-danger transition-colors"
                 title="Delete prompt"
               >
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path d="M1.5 3h9M4 3V2a.5.5 0 0 1 .5-.5h3A.5.5 0 0 1 8 2v1M2.5 3l.5 7a.5.5 0 0 0 .5.5h5a.5.5 0 0 0 .5-.5l.5-7" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path
+                    d="M1.5 3h9M4 3V2a.5.5 0 0 1 .5-.5h3A.5.5 0 0 1 8 2v1M2.5 3l.5 7a.5.5 0 0 0 .5.5h5a.5.5 0 0 0 .5-.5l.5-7"
+                    stroke="currentColor"
+                    strokeWidth="1.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </button>
             </>
           )}
           <button
             onClick={() => setExpanded((v) => !v)}
-            className="h-[28px] w-[28px] flex items-center justify-center text-adm-muted hover:text-adm-text transition-colors"
+            className="flex h-[28px] w-[28px] items-center justify-center text-adm-muted transition-colors hover:text-adm-text"
           >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
-              className={['transition-transform', expanded ? 'rotate-180' : ''].join(' ')}>
-              <path d="M3 5l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              className={['transition-transform', expanded ? 'rotate-180' : ''].join(' ')}
+            >
+              <path
+                d="M3 5l4 4 4-4"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           </button>
         </div>
@@ -550,10 +619,10 @@ function PromptCard({
               value={draft.template}
               onChange={(e) => setDraft((d) => ({ ...d, template: e.target.value }))}
               spellCheck={false}
-              className="w-full px-4 py-3 text-[12px] font-mono text-adm-text leading-relaxed outline-none resize-none bg-adm-bg focus:bg-white/50 transition-colors min-h-[200px]"
+              className="min-h-[200px] w-full resize-none bg-adm-bg px-4 py-3 font-mono text-[12px] leading-relaxed text-adm-text outline-none transition-colors focus:bg-white/50"
             />
           ) : (
-            <pre className="px-4 py-4 text-[12px] font-mono text-adm-text leading-relaxed whitespace-pre-wrap overflow-x-auto max-h-[400px] overflow-y-auto">
+            <pre className="max-h-[400px] overflow-x-auto overflow-y-auto whitespace-pre-wrap px-4 py-4 font-mono text-[12px] leading-relaxed text-adm-text">
               {prompt.template}
             </pre>
           )}
@@ -565,7 +634,10 @@ function PromptCard({
 
 // ── New prompt form ───────────────────────────────────────────────────────────
 
-function NewPromptForm({ onSave, onCancel }: {
+function NewPromptForm({
+  onSave,
+  onCancel,
+}: {
   onSave: (p: Omit<AdminPrompt, 'updated_at'>) => Promise<void>;
   onCancel: () => void;
 }) {
@@ -588,20 +660,20 @@ function NewPromptForm({ onSave, onCancel }: {
   };
 
   return (
-    <div className="rounded-xl border border-accent/50 bg-adm-bg overflow-hidden">
-      <div className="px-4 pt-4 pb-3 space-y-2">
+    <div className="overflow-hidden rounded-xl border border-accent/50 bg-adm-bg">
+      <div className="space-y-2 px-4 pb-3 pt-4">
         <input
           autoFocus
           value={label}
           onChange={(e) => setLabel(e.target.value)}
           placeholder="Prompt name"
-          className="w-full h-[36px] px-3 rounded-lg border border-adm-border bg-adm-bg text-adm-text text-[14px] font-semibold outline-none focus:border-accent transition-colors placeholder:text-adm-placeholder"
+          className="h-[36px] w-full rounded-lg border border-adm-border bg-adm-bg px-3 text-[14px] font-semibold text-adm-text outline-none transition-colors placeholder:text-adm-placeholder focus:border-accent"
         />
         <input
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Short description (optional)"
-          className="w-full h-[32px] px-3 rounded-lg border border-adm-border bg-adm-bg text-adm-text text-[13px] outline-none focus:border-accent transition-colors placeholder:text-adm-placeholder"
+          className="h-[32px] w-full rounded-lg border border-adm-border bg-adm-bg px-3 text-[13px] text-adm-text outline-none transition-colors placeholder:text-adm-placeholder focus:border-accent"
         />
       </div>
       <div className="border-t border-adm-border">
@@ -611,16 +683,21 @@ function NewPromptForm({ onSave, onCancel }: {
           placeholder="Paste or write your prompt here…"
           rows={10}
           spellCheck={false}
-          className="w-full px-4 py-3 text-[12px] font-mono text-adm-text leading-relaxed outline-none resize-none bg-adm-bg placeholder:text-adm-placeholder"
+          className="w-full resize-none bg-adm-bg px-4 py-3 font-mono text-[12px] leading-relaxed text-adm-text outline-none placeholder:text-adm-placeholder"
         />
       </div>
-      <div className="flex gap-2 px-4 py-3 border-t border-adm-border">
-        <button onClick={onCancel}
-          className="h-[32px] px-3 rounded-lg border border-adm-border text-adm-muted text-[13px] hover:bg-adm-border/60 transition-colors">
+      <div className="flex gap-2 border-t border-adm-border px-4 py-3">
+        <button
+          onClick={onCancel}
+          className="h-[32px] rounded-lg border border-adm-border px-3 text-[13px] text-adm-muted transition-colors hover:bg-adm-border/60"
+        >
           Cancel
         </button>
-        <button onClick={() => void handleSave()} disabled={!label.trim() || !template.trim() || saving}
-          className="h-[32px] px-4 rounded-lg bg-accent text-bg text-[13px] font-semibold disabled:opacity-40 hover:bg-amber-400 transition-colors">
+        <button
+          onClick={() => void handleSave()}
+          disabled={!label.trim() || !template.trim() || saving}
+          className="h-[32px] rounded-lg bg-accent px-4 text-[13px] font-semibold text-bg transition-colors hover:bg-amber-400 disabled:opacity-40"
+        >
           {saving ? '…' : 'Add prompt'}
         </button>
       </div>
@@ -666,24 +743,34 @@ function PromptsTab() {
     <div className="max-w-[800px] space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-[14px] text-adm-muted">
-          Copy a prompt, paste into Claude / ChatGPT. Edit any prompt directly — changes save to the database.
+          Copy a prompt, paste into Claude / ChatGPT. Edit any prompt directly — changes save to the
+          database.
         </p>
         <button
           onClick={() => setShowNew(true)}
-          className="flex-shrink-0 inline-flex items-center gap-1.5 h-[32px] px-3.5 rounded-lg bg-accent text-bg text-[12px] font-semibold hover:bg-amber-400 transition-colors"
+          className="inline-flex h-[32px] flex-shrink-0 items-center gap-1.5 rounded-lg bg-accent px-3.5 text-[12px] font-semibold text-bg transition-colors hover:bg-amber-400"
         >
-          <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1v9M1 5.5h9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+            <path
+              d="M5.5 1v9M1 5.5h9"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+            />
+          </svg>
           New prompt
         </button>
       </div>
 
       {/* Schema reference */}
-      <div className="rounded-xl border border-adm-border bg-adm-sidebar overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-adm-border">
-          <span className="text-[12px] font-semibold text-adm-muted uppercase tracking-wider">JSON Schema reference</span>
+      <div className="overflow-hidden rounded-xl border border-adm-border bg-adm-sidebar">
+        <div className="flex items-center justify-between border-b border-adm-border px-4 py-3">
+          <span className="text-[12px] font-semibold uppercase tracking-wider text-adm-muted">
+            JSON Schema reference
+          </span>
           <CopyButton text={SCHEMA_BLOCK} label="Copy schema" />
         </div>
-        <pre className="px-4 py-3 text-[12px] font-mono text-adm-text leading-relaxed overflow-x-auto">
+        <pre className="overflow-x-auto px-4 py-3 font-mono text-[12px] leading-relaxed text-adm-text">
           {SCHEMA_BLOCK}
         </pre>
       </div>
@@ -691,7 +778,10 @@ function PromptsTab() {
       {/* New prompt form */}
       {showNew && (
         <NewPromptForm
-          onSave={async (p) => { await upsert.mutateAsync(p); setShowNew(false); }}
+          onSave={async (p) => {
+            await upsert.mutateAsync(p);
+            setShowNew(false);
+          }}
           onCancel={() => setShowNew(false)}
         />
       )}
@@ -699,30 +789,33 @@ function PromptsTab() {
       {/* Prompt cards */}
       {isLoading
         ? [1, 2, 3].map((i) => (
-            <div key={i} className="h-[64px] rounded-xl border border-adm-border animate-pulse bg-adm-sidebar" />
-          ))
-        : prompts.map((p) => (
-            <PromptCard
-              key={p.id}
-              prompt={p}
-              onSave={handleSave}
-              onDelete={handleDelete}
+            <div
+              key={i}
+              className="h-[64px] animate-pulse rounded-xl border border-adm-border bg-adm-sidebar"
             />
           ))
-      }
+        : prompts.map((p) => (
+            <PromptCard key={p.id} prompt={p} onSave={handleSave} onDelete={handleDelete} />
+          ))}
 
       {/* Confirm delete */}
       {confirmDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-          <div className="bg-adm-bg rounded-2xl shadow-2xl p-6 max-w-[340px] w-full mx-4">
-            <p className="text-[15px] text-adm-text mb-5">Delete this prompt? This cannot be undone.</p>
+          <div className="mx-4 w-full max-w-[340px] rounded-2xl bg-adm-bg p-6 shadow-2xl">
+            <p className="mb-5 text-[15px] text-adm-text">
+              Delete this prompt? This cannot be undone.
+            </p>
             <div className="flex gap-3">
-              <button onClick={() => setConfirmDelete(null)}
-                className="flex-1 h-[38px] rounded-btn border border-adm-border text-adm-muted text-[13px] font-medium hover:bg-adm-border/60 transition-colors">
+              <button
+                onClick={() => setConfirmDelete(null)}
+                className="h-[38px] flex-1 rounded-btn border border-adm-border text-[13px] font-medium text-adm-muted transition-colors hover:bg-adm-border/60"
+              >
                 Cancel
               </button>
-              <button onClick={confirmDeleteAction}
-                className="flex-1 h-[38px] rounded-btn bg-danger text-white text-[13px] font-semibold hover:opacity-90 transition-opacity">
+              <button
+                onClick={confirmDeleteAction}
+                className="h-[38px] flex-1 rounded-btn bg-danger text-[13px] font-semibold text-white transition-opacity hover:opacity-90"
+              >
                 Delete
               </button>
             </div>
@@ -731,14 +824,24 @@ function PromptsTab() {
       )}
 
       <div className="rounded-xl border border-adm-border bg-adm-sidebar p-4">
-        <p className="text-[13px] font-semibold text-adm-text mb-1">⚠️ Always verify coordinates</p>
+        <p className="mb-1 text-[13px] font-semibold text-adm-text">⚠️ Always verify coordinates</p>
         <p className="text-[13px] text-adm-muted">
           LLMs hallucinate lat/lng. Check each location on{' '}
-          <a href="https://maps.google.com" target="_blank" rel="noreferrer" className="text-accent hover:underline">
+          <a
+            href="https://maps.google.com"
+            target="_blank"
+            rel="noreferrer"
+            className="text-accent hover:underline"
+          >
             Google Maps
           </a>{' '}
           or{' '}
-          <a href="https://www.openstreetmap.org" target="_blank" rel="noreferrer" className="text-accent hover:underline">
+          <a
+            href="https://www.openstreetmap.org"
+            target="_blank"
+            rel="noreferrer"
+            className="text-accent hover:underline"
+          >
             OpenStreetMap
           </a>{' '}
           before importing.
@@ -763,18 +866,16 @@ export default function ImportPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-[24px] font-bold text-adm-text mb-6">
-        {t('nav.import')}
-      </h1>
+      <h1 className="mb-6 text-[24px] font-bold text-adm-text">{t('nav.import')}</h1>
 
       {/* Tab bar */}
-      <div className="flex border-b border-adm-border mb-6">
+      <div className="mb-6 flex border-b border-adm-border">
         {tabs.map(({ key, label }) => (
           <button
             key={key}
             onClick={() => setTab(key)}
             className={[
-              'px-5 py-2.5 text-[14px] font-medium border-b-2 -mb-px transition-colors',
+              '-mb-px border-b-2 px-5 py-2.5 text-[14px] font-medium transition-colors',
               tab === key
                 ? 'border-accent text-adm-text'
                 : 'border-transparent text-adm-muted hover:text-adm-text',
