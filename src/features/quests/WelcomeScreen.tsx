@@ -183,8 +183,8 @@ export default function WelcomeScreen() {
   return (
     <>
       <Screen>
-        {/* Back to quest list + language switcher */}
-        <div className="flex flex-shrink-0 items-center justify-between px-2 pt-[max(env(safe-area-inset-top),10px)]">
+        {/* Back button */}
+        <div className="flex-shrink-0 px-2 pt-[max(env(safe-area-inset-top),10px)]">
           <button
             onClick={() => navigate('/')}
             className="grid h-11 w-11 place-items-center rounded-lg text-white/60 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
@@ -200,7 +200,7 @@ export default function WelcomeScreen() {
               />
             </svg>
           </button>
-          <div role="radiogroup" aria-label={t('chooseLanguage')} className="flex gap-1.5 pr-2">
+          <div role="radiogroup" aria-label={t('chooseLanguage')} className="flex gap-2 mt-3 px-2">
             {LANGS.map((l) => (
               <Pill
                 key={l.code}
